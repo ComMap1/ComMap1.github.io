@@ -119,6 +119,8 @@
         z-index: 1000;
         pointer-events: none;
         font-weight: bold;
+        justify-content: center;
+        align-items: center;
     }
         
         #right-side-panel {
@@ -142,17 +144,8 @@
         }
         
         #map-container {
-        height: 40vh;
-        width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-    
-    #map {
-        width: 100% !important;
-        height: 100% !important;
-    }
+            height: 40vh;
+        }
         
         #toggle-panel-btn {
         position: absolute;
@@ -510,40 +503,374 @@
         var organizations = [
             {
                 name: "Sources d'Espoir e.V.",
-                lat: 52.56522269687419,
-                lon: 13.445997821537802,
-                address: "Romain-Rolland-Straße 14-24, 13089 Berlin",
-                phone: "0176 54452144",
-                website: "https://sources-despoir.org/",
-                facebook: "https://www.facebook.com/people/Sources-de-lespoir-Quelle-der-Hoffnung/100064747714283/",
-                instagram: "https://www.instagram.com/sourcesdespoir.e.v/",
+            lat: 52.56522269687419,
+            lon: 13.445997821537802,
+            address: "Romain-Rolland-Straße 14-24, 13089 Berlin",
+            phone: "0176 54452144",
+            website: "https://sources-despoir.org/",
+            facebook: "https://www.facebook.com/people/Sources-de-lespoir-Quelle-der-Hoffnung/100064747714283/",
+            instagram: "https://www.instagram.com/sourcesdespoir.e.v/",
+            languages: {
+                de: "SdE e.V. fördert Kinder und Jugendliche durch Musik, Kunst und Sport, unterstützt hilfsbedürftige Ältere und strebt gesellschaftliche Teilhabe für alle an. Ziel ist Chancengleichheit und weltweite Förderung von Toleranz, Respekt und Frieden. Die Dekolonisierung spielt eine zentrale Rolle, indem koloniale Denkmuster hinterfragt werden. Durch Veranstaltungen, Diskussionsforen und Schulungen trägt der Verein dazu bei, koloniale Strukturen zu durchbrechen und Raum für diverse Stimmen zu schaffen.",
+                en: "SdE e.V. promotes children and young people through music, art, and sports, supports needy elderly people, and aims for social inclusion for everyone. The goal is equality of opportunity and the worldwide promotion of tolerance, respect, and peace. Decolonization plays a central role by questioning colonial thinking patterns. Through events, forums, and training, the organization helps break down colonial structures and create space for diverse voices."
+            },
+            media: [
+                "https://www.youtube.com/embed/ejqqRCvEhEg?si=2LuJ6H8f_DruSf7X",
+                "https://live.staticflickr.com/65535/54397200295_fe3b483286_b.jpg",
+                "https://live.staticflickr.com/65535/54396838891_419e442710_b.jpg",
+                "https://live.staticflickr.com/65535/54397016504_9a9e7b538e_b.jpg",
+                "https://live.staticflickr.com/65535/54395949017_1b6ed2c9a9_b.jpg",
+                "https://live.staticflickr.com/65535/54397070383_aa4126fa74_b.jpg",
+                "https://live.staticflickr.com/65535/54396838741_c1db91d3b7_b.jpg",
+                "https://live.staticflickr.com/65535/54397016649_d4fd07748c_b.jpg",
+                "https://live.staticflickr.com/65535/54397070828_742bd80a77_b.jpg",
+                "https://live.staticflickr.com/65535/54397016659_06cdf87e4a_b.jpg"
+            ]
+        },
+        {
+            name: "MigrArte Perú e.V",
+            lat: 52.534372575998916,
+            lon: 13.415462589767959,
+            address: "Kollwitzstr 43, 10405 Berlin, c/o Alvarez-Radtke",
+            phone: "0163 6380397",
+            website: "https://www.migrarteperu.de",
+            facebook: "https://www.facebook.com/migrarte19/",
+            instagram: "https://www.instagram.com/migrarteperu/",
+            languages: {
+                de: "Wir sind ein Verein der sich für den interkulturellen, pädagogischen, künstlerischen und politischen Austausch zwischen Migrant*Innen in Berlin, Peru und Abya Yala (Lateinamerika) aus dekolonialer und ökofeministischer Perspektive einsetzt und fördert.",
+                en: "We are an association that promotes intercultural, pedagogical, artistic and political exchange between migrants in Berlin, Peru and Abya Yala (Latin America) from a decolonial and ecofeminist perspective."
+            },
+            media: [
+                "https://www.youtube.com/embed/GUiJzRnjPOw",
+                "https://live.staticflickr.com/65535/54395990922_7322e78b6b_b.jpg",
+                "https://live.staticflickr.com/65535/54395990932_3d9ffab48f_b.jpg",
+                "https://live.staticflickr.com/65535/54397058394_56393d3469_b.jpg",
+                "https://live.staticflickr.com/65535/54397112698_568ae2de31_b.jpg",
+                "https://live.staticflickr.com/65535/54397112693_9a896a988d_b.jpg",
+                "https://live.staticflickr.com/65535/54397243025_50b03f2285_b.jpg",
+                "https://live.staticflickr.com/65535/54397242970_ac5850b156_b.jpg",
+                "https://live.staticflickr.com/65535/54397112633_ec7c6a6244_b.jpg",
+                "https://live.staticflickr.com/65535/54397242950_94463b8369_b.jpg",
+                "https://live.staticflickr.com/65535/54397112598_0e31af30e1_b.jpg",
+                "https://live.staticflickr.com/65535/54395990792_8f580eb75e_b.jpg",
+                "https://live.staticflickr.com/65535/54396881746_16211d9a44_b.jpg",
+                "https://live.staticflickr.com/65535/54395990787_24d1b9abcd_b.jpg",
+                "https://live.staticflickr.com/65535/54397078354_9977cff46e_b.jpg"
+            ]
+        },
+{
+                name: "InterFem Collective e.V.",
+                lat: 52.55191453182032,
+                lon: 13.41621063641735,
+                address: "Erich-Weinert-Str. 11, 10439 Berlin",
+                phone: "N/A",
+                website: "https://www.interfem.org",
+                facebook: "https://www.facebook.com/InterFemCollective/",
+                instagram: "https://www.instagram.com/interfemcollective/",
                 languages: {
-                    de: "SdE e.V. fördert Kinder und Jugendliche durch Musik, Kunst und Sport, unterstützt hilfsbedürftige Ältere und strebt gesellschaftliche Teilhabe für alle an. Ziel ist Chancengleichheit und weltweite Förderung von Toleranz, Respekt und Frieden. Die Dekolonisierung spielt eine zentrale Rolle, indem koloniale Denkmuster hinterfragt werden. Durch Veranstaltungen, Diskussionsforen und Schulungen trägt der Verein dazu bei, koloniale Strukturen zu durchbrechen und Raum für diverse Stimmen zu schaffen.",
-                    en: "SdE e.V. promotes children and young people through music, art, and sports, supports needy elderly people, and aims for social inclusion for everyone. The goal is equality of opportunity and the worldwide promotion of tolerance, respect, and peace. Decolonization plays a central role by questioning colonial thinking patterns. Through events, forums, and training, the organization helps break down colonial structures and create space for diverse voices."
+                    de: "InterFem Collective e.V. ist ein selbstorganisierter, migrantischer und intersektional-feministischer Verein mit Sitz in Berlin. Unser Ziel ist es, migrantische, BIPoC und queere FLINTA* Menschen durch künstlerischen Ausdruck und Aktivismus zu stärken und eine solidarische, dekoloniale Gemeinschaft zu schaffen.",
+                    en: "InterFem Collective e.V. is a self-organized, migrant and intersectional-feminist association based in Berlin. Our goal is to empower migrant, BIPoC and queer FLINTA* people through artistic expression and activism and to create a solidary, decolonial community."
+                   
                 },
                 media: [
-                    "https://www.youtube.com/embed/ejqqRCvEhEg?si=2LuJ6H8f_DruSf7X",
-                    "https://live.staticflickr.com/65535/54397200295_fe3b483286_b.jpg",
-                    "https://live.staticflickr.com/65535/54396838891_419e442710_b.jpg"
+                    "https://www.youtube.com/embed/mMB1VL01HBQ",
+                    "https://live.staticflickr.com/65535/54397271305_5e6eacc430_b.jpg",
+                    "https://live.staticflickr.com/65535/54397271325_d6441879c6_o.jpg",
+                    "https://live.staticflickr.com/65535/54397271300_b0a94fec39_o.jpg",
+                    "https://live.staticflickr.com/65535/54397086739_0b9e0a9a3f_b.jpg",
+                    "https://live.staticflickr.com/65535/54396909796_f386a514f3_b.jpg",
+                    "https://live.staticflickr.com/65535/54397140978_418df81a7b_o.jpg",
+                    "https://live.staticflickr.com/65535/54396019597_4743b67b4d_o.jpg"
+                ]
+            },
+            
+            {
+                name: "Verein Partnerschaft Deutschland Afrika e.V. / VPDA e.V.",
+                lat: 52.61013251032835,
+                lon: 13.430259233348377,
+                address: "Postfach 510640, 13366 Berlin",
+                phone: "+49(0)170-7202928 / +49(0)152-14179130",
+                website: "https://vpda-berlin.org/",
+                facebook: "https://www.facebook.com/VPDAeV",
+                instagram: "www.instagram.com/vpda_e.v",
+                languages: {
+                de: "VPDA e.V. arbeitet in 3 Hauptbereichen: Entwicklungszusammenarbeit zwischen Deutschland und dem globalen Süden, Förderung der Integration von Migrant*innen sowie die Unterstützung im Bildungsbereich. Wir führen allgemeine Sozialberatungen durch, organisieren Workshops und sind in verschiedenen Netzwerken (z.B. Mehrsprachigkeit,  Antirassismus, Antidiskriminierung) aktiv. ",
+                
+                en: "VPDA e.V. works in 3 main areas: Development cooperation between Germany and the Global South, promoting the integration of migrants and providing support in the field of education. We provide general social counselling, organize workshops and are active in various networks (e.g. multilingualism, anti-racism, anti-discrimination)."},
+                media: [
+                    "https://www.youtube.com/embed/2R2ZByxtR28",
+                    "https://www.youtube.com/embed/fGnSxUhQx6Q",
+                    "https://www.youtube.com/embed/Q7yvmPy4Qhw",
+                    "https://live.staticflickr.com/65535/54397157793_10c444b9f9_b.jpg",
+                    "https://live.staticflickr.com/65535/54397103029_ec0ff1bed9_b.jpg",
+                    "https://live.staticflickr.com/65535/54397102984_d404c69ea8_b.jpg",
+                    "https://live.staticflickr.com/65535/54396036807_f53073182a_b.jpg",
+                    "https://live.staticflickr.com/65535/54397157763_f64b20a1e1_b.jpg",
+                    "https://live.staticflickr.com/65535/54397288145_76e3110e70_b.jpg"
                 ]
             },
             {
-                name: "MigrArte Perú e.V",
-                lat: 52.534372575998916,
-                lon: 13.415462589767959,
-                address: "Kollwitzstr 43, 10405 Berlin, c/o Alvarez-Radtke",
-                phone: "0163 6380397",
-                website: "https://www.migrarteperu.de",
-                facebook: "https://www.facebook.com/migrarte19/",
-                instagram: "https://www.instagram.com/migrarteperu/",
+                name: "Karussell e.V.",
+                lat: 52.5534826055387,
+                lon: 13.408849939328247,
+                address: "Schönfließer Str. 7 (IKHP)",
+                phone: "030 440 365 55",
+                website: "https://karussell-ev.de/",
+                facebook: "https://www.facebook.com/karussell.ev",
+                instagram: "https://karussell-ev.de/",
                 languages: {
-                    de: "Wir sind ein Verein der sich für den interkulturellen, pädagogischen, künstlerischen und politischen Austausch zwischen Migrant*Innen in Berlin, Peru und Abya Yala (Lateinamerika) aus dekolonialer und ökofeministischer Perspektive einsetzt und fördert.",
-                    en: "We are an association that promotes intercultural, pedagogical, artistic and political exchange between migrants in Berlin, Peru and Abya Yala (Latin America) from a decolonial and ecofeminist perspective."
-                },
+                de: "VPDA e.V. arbeitet in 3 Hauptbereichen: Entwicklungszusammenarbeit zwischen Deutschland und dem globalen Süden, Förderung der Integration von Migrant*innen sowie die Unterstützung im Bildungsbereich. Wir führen allgemeine Sozialberatungen durch, organisieren Workshops und sind in verschiedenen Netzwerken (z.B. Mehrsprachigkeit,  Antirassismus, Antidiskriminierung) aktiv. ",
+                
+                en: "VPDA e.V. works in 3 main areas: Development cooperation between Germany and the Global South, promoting the integration of migrants and providing support in the field of education. We provide general social counselling, organize workshops and are active in various networks (e.g. multilingualism, anti-racism, anti-discrimination)."},
                 media: [
-                    "https://www.youtube.com/embed/GUiJzRnjPOw",
-                    "https://live.staticflickr.com/65535/54395990922_7322e78b6b_b.jpg",
-                    "https://live.staticflickr.com/65535/54395990932_3d9ffab48f_b.jpg"
+                    "https://www.youtube.com/embed/k7BGGr0pp10",
+                    "https://www.youtube.com/embed/2zhA7zHQjgE",
+                    "https://live.staticflickr.com/65535/54409507553_cb5ca8d058_b.jpg",
+                    "https://live.staticflickr.com/65535/54409446674_a7c256acfe_b.jpg",
+                    "https://live.staticflickr.com/65535/54408393962_aff85e1664_b.jpg",
+                    "https://live.staticflickr.com/65535/54408393972_bac4a4a16c_b.jpg",
+                    "https://live.staticflickr.com/65535/54409507578_68c258f678_b.jpg"
+                ]
+            },
+            {
+                name: "Ein Lichtstrahl e.V.",
+                lat: 52.5319742234481,
+                lon: 13.426639096997702,
+                address: "Immanuelkirchstraße 20, 10405 Berlin",
+                phone: "+49 (30) 88493008",
+                website: "https://einlichtstrahlev.de/de/ueber-uns/",
+                facebook: "https://www.facebook.com/einlichtstrahlev/",
+                instagram: "https://www.instagram.com/ein_lichtstrahl_ev/",
+                languages: {
+                    de: "Der Verein Ein Lichtstrahl e.V. wurde 2007 ins Leben gerufen.Die Idee unserer Gründung entstand in Berlin – in der Stadt, die für Aussiedler aller Welt offen ist, Integration, Lebensfreiheit und Vielfalt scheinbar selbstverständlich einhergehen, welche aber auch die Stadt ist, in der Armut und Reichtum in aller Offenheit und Kontrast direkt nebeneinander Programm sind.",
+                
+                en: "The association Ein Lichtstrahl e.V. was founded in 2007.The idea of our foundation was born in Berlin - in the city that is open to immigrants from all over the world, where integration, freedom of life and diversity seem to go hand in hand, but which is also the city where poverty and riches are programmed side by side in all openness and contrast."},
+                media: [
+                    "https://www.youtube.com/embed/GnGJz0L657Q",
+                    "https://live.staticflickr.com/65535/54382254086_8c5116edc5_b.jpg",
+                    "https://live.staticflickr.com/65535/54381387982_fe9e9e41b5_b.jpg",
+                    "https://live.staticflickr.com/65535/54382499133_88dd895df3_b.jpg",
+                    "https://live.staticflickr.com/65535/54382467214_e525a009bd_b.jpg"
+                ]
+            },
+            
+            {
+                name: "Zaki - Bildung und Kultur e.V.",
+                lat: 52.4788803043532,
+                lon: 13.430364850601745,
+                address: "Am Sudhaus 2, 12053 Berlin",
+                phone: "0162 2071801",
+                website: "https://zaki-ev.de",
+                facebook: "https://www.facebook.com/zakibildung/",
+                instagram: "https://www.instagram.com/zaki_verein/",
+                languages: {
+                    de: "ZAkï - Bildung und Kultur e.V., gegründet 2019 in Berlin, unterstützt Neubürger*innen aus Afghanistan, dem arabischsprachigen Raum und der Ukraine bei der Integration in Deutschland. Die Organisation fokussiert sich auf Bildung und Arbeitsmarktzugang, fördert gesellschaftliche Teilhabe und selbstbestimmte Zielsetzung. Ihr Angebot umfasst politische Bildung, behördliche Unterstützung, sprachliche Förderung und persönliche Zukunftsgestaltung, speziell für Menschen mit Fluchterfahrung.",
+                
+                en: "ZAkï - Bildung und Kultur e.V., founded in Berlin in 2019, helps new citizens from Afghanistan, the Arabic-speaking world and Ukraine to integrate in Germany. The organization focuses on education and access to the labour market, promotes social participation and self-determined goal setting. Its services include political education, official support, language support and personal future planning, especially for people with refugee experience."},
+                media: [
+                    "https://www.youtube.com/embed/Zx8f9BgoogM",
+                    "https://www.youtube.com/embed/GTcJhWeo3eM",
+                    "https://www.youtube.com/embed/9bOPQKvlvjw",
+                    "https://www.youtube.com/embed/VGPPFkf2iP4",                 
+                    "https://live.staticflickr.com/65535/54409661580_e233f1cf3c_b.jpg",
+                    "https://live.staticflickr.com/65535/54409284746_9e55dd4e71_b.jpg",
+                    "https://live.staticflickr.com/65535/54409466434_d32c217101_b.jpg",
+                    "https://live.staticflickr.com/65535/54409528443_788fd51698_b.jpg",
+                    "https://live.staticflickr.com/65535/54409661645_caaefa88df_b.jpg"
+                ]
+            },
+            
+             {
+                name: "SprachCafé Polnisch e.V.",
+                lat: 52.56561672470837,
+                lon: 13.394077754670363,
+                address: "Schulzestr. 1, 13187 Berlin-Pankow",
+                phone: "+49 (0)160 9968 0059",
+                website: "https://sprachcafe-polnisch.org",
+                facebook: "https://www.facebook.com/sprachcafe.polnisch/",
+                instagram: "https://www.instagram.com/sprachcafepolnisch/",
+                languages: {
+                    de: "SprachCafé Polnisch ist ein Begegnungs- und Lernort mit polnischer Note im Norden und im Süden Berlins, ein Brückenbauer zwischen Sprachen, Kulturen, Generationen.Gute Nachbarschaft und Nachhaltigkeit liegen uns am Herzen.",
+                
+                en: "SprachCafé Polnisch is a meeting and learning place with a Polish touch in the north and south of Berlin, a bridge builder between languages, cultures and generations.Good neighborliness and sustainability are important to us."},
+                media: [
+                    "https://www.youtube.com/embed/iRDAoalmgNU",
+                    "https://live.staticflickr.com/65535/54409432531_d94d77bf08_b.jpg",
+                    "https://live.staticflickr.com/65535/54408565347_2a1b9c92da_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614269_1ac7b47249_b.jpg",
+                    "https://live.staticflickr.com/65535/54409678178_e9c023794e_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614304_e1a1d5959c_b.jpg",
+                    "https://live.staticflickr.com/65535/54408565292_0083e894b3_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614334_be0215da21_b.jpg",
+                    "https://live.staticflickr.com/65535/54408565207_2dc69724df_b.jpg",                    
+                    "https://live.staticflickr.com/65535/54408565207_2dc69724df_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614319_34c17ec8e0_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614249_aef9a25aee_b.jpg",
+                    "https://live.staticflickr.com/65535/54409432486_2a8264dd30_b.jpg",
+                    "https://live.staticflickr.com/65535/54409678153_8e709f6342_b.jpg",
+                    "https://live.staticflickr.com/65535/54408565187_f979377655_b.jpg",
+                    "https://live.staticflickr.com/65535/54409432426_a35a845d39_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614189_f95a399659_b.jpg"
+                ]
+            },
+            
+             {
+                name: "Koopkultur e.V.",
+                lat: 52.549381029197676, 
+                lon: 13.414048989612848,
+                address: "Schönhauser Allee 75, 10439 Berlin",
+                phone: "0177 4219797",
+                website: "https://www.koopkultur.de",
+                facebook: "https://www.facebook.com/koopkultur",
+                instagram: "https://www.instagram.com/koopkultur/",
+                languages: {
+                    de: "Koopkultur e.V. ist seit 2018 eine gemeinnützige MSO und ein Netzwerk von Künstler*innen, Wissenschaftler*innen, Urbanist*innenen, Pädagog*innen und Aktivist*innen. Gemeinsam arbeiten wir an Projekten, die verschiedene Disziplinen überschreiten und setzen uns für eine gerechtere und ganzheitliche Bildung ein. Durch unsere Zusammenarbeit und den Austausch untereinander schaffen wir eine Plattform, um positive Veränderungen in der Bildungslandschaft zu bewirken.",
+                
+                en: "Koopkultur e.V. has been a non-profit MSO since 2018 and is a network of artists, scientists, urbanists, educators and activists. Together, we work on projects that transcend different disciplines and are committed to a fairer and holistic education. Through our collaboration and exchange with each other, we create a platform to bring about positive change in the educational landscape."},
+                media: [
+                    "https://www.youtube.com/embed/MvQ5NiKILTs",
+                    "https://www.youtube.com/embed/6yfHy1b8iIk",
+                    "https://www.youtube.com/embed/POoBqeG6KWw",
+                    "https://live.staticflickr.com/65535/54409910545_c9f8af224d_b.jpg",
+                    "https://live.staticflickr.com/65535/54408662542_3319410cf3_b.jpg",
+                    "https://live.staticflickr.com/65535/54409531021_56f8f9cd7d_b.jpg",
+                    "https://live.staticflickr.com/65535/54409531026_3595fdcb59_b.jpg"
+                ]
+            },
+            
+              {
+                name: "Afrikanischer Elternverein Berlin Brandenburg - AfEBB e.V.",
+                lat: 52.570942104204256, 
+                lon: 13.427925312341397,
+                address: "Prenzlauer Promenade 113, 13189 Berlin",
+                phone: "+49 176 43691330",
+                website: "https://afebb.de",
+                facebook: "https://afebb.de",
+                instagram: "https://www.instagram.com/afebb_elternverein/",
+                languages: {
+                    de: "Wir sein ein Verein, der zu einer gelungenen Integration der afrikanischen Community in Pankow beitragen möchte, indem wir ihr die dafür erforderlichen unterstützenden spezifischen Angebote.",
+                
+                en: "We are an association that wants to contribute to the successful integration of the African community in Pankow by providing it with the specific support it needs."},
+                media: [
+                    "https://www.youtube.com/embed/WvjGo0Ki1PU",
+                    "https://www.youtube.com/embed/OU43DlCGFX8",
+                    "https://www.youtube.com/embed/XgMRwBIAsdc"
+                    
+                ]
+            },
+            
+            {
+                name: "bocconcini di cultura e.V.",
+                lat: 52.52984701702703, 
+                lon: 13.418774310491536,
+                address: "Prenzlauer Allee 8, 10405 Berlin",
+                phone: "030 44339181",
+                website: "https://www.bocconcini.net/?lang=de",
+                facebook: "https://www.facebook.com/bocconcinidicultura",
+                instagram: "https://www.instagram.com/bocconcinidicultura/",
+                languages: {
+                    de: "Förderung, Pflege und Verbreitung der italienische Sprache und Kultur unter Kinder und Jugendlichen, mit und ohne italienischen Herkunft.",
+                
+                en: "Promotion, cultivation and dissemination of the Italian language and culture among children and young people, with and without Italian origin."},
+                media: [
+                    "https://www.youtube.com/embed/1ft5l5lo-L8",
+                    "https://live.staticflickr.com/65535/54409556936_c38f454901_o.jpg"
+                   
+                ]
+            },
+            
+             {
+                name: "Initiative MESTIZX BERLIN",
+                lat: 52.56691504491341, 
+                lon: 13.39758404426302,
+                address: "Wollankstraße 117, 13187 Berlin",
+                phone: "0152 01916017",
+                website: "https://mestizx.de/de/",
+                facebook: "https://www.facebook.com/MestizxBerlin/?locale=de_DE",
+                instagram: "https://www.instagram.com/mestizx_berlin/",
+                languages: {
+                    de: "Wir sind Mestizx, ein künstlerisches Kollektiv mit Sitz in Berlin. Wir wurden 2020 mit der Idee gegründet, kulturelle und partizipative Prozesse zu erforschen. Wir nähern uns den Herausforderungen unserer Stadt aus einem kritischen und transformativen Blickwinkel. Im Mittelpunkt unserer Arbeit steht die Schaffung von Räumen für Begegnung, Experiment und Dialog. Wir verbinden Kunst, Forschung und kollektive Aktionen. Da wir aus verschiedenen Ecken der Welt kommen, reden wir in verschiedenen Sprachen wie Spanisch, Deutsch, Englisch und Russisch.",
+                
+                en: "We are Mestizx, an artistic collective based in Berlin. We were founded in 2020 with the idea of exploring cultural and participatory processes. We approach the challenges of our city from a critical and transformative perspective. Our work focuses on creating spaces for encounters, experimentation and dialog. We combine art, research and collective action. As we come from different corners of the world, we speak in different languages such as Spanish, German, English and Russian.",
+                
+                
+                es: "Somos Mestizx, un colectivo artístico con sede en Berlín.Nacimos en 2020 con la idea de explorar procesos culturales y participativos. Abordamos los desafíos de nuestra ciudad desde una perspectiva crítica y transformadora. El núcleo de nuestro trabajo es la creación de espacios de encuentro, experimentación y diálogo. Combinamos arte, investigación y acciones colectivas. Como venimos de diferentes partes del mundo, nos comunicamos en varios idiomas, como español, alemán, inglés y ruso."
+},
+                media: [
+                    "https://www.youtube.com/embed/fDzlPHQLW3E",
+                    "https://live.staticflickr.com/65535/54409745064_45c7d449b7_b.jpg",
+                    "https://live.staticflickr.com/65535/54409942525_d265b530bb_b.jpg",
+                    "https://live.staticflickr.com/65535/54409745044_603511bd0e_b.jpg",
+                    "https://live.staticflickr.com/65535/54409745049_fdcba74657_b.jpg",
+                    "https://live.staticflickr.com/65535/54409563036_5a29ee6b75_b.jpg"
+                ]
+            },
+            
+            {
+                name: "MaMis en Movimiento e.V.",
+                lat: 52.53304749996317, 
+                lon: 13.432319939327093,
+                address: "Esmarchstr. 18",
+                phone: "N/A",
+                website: "https://www.mamisenmovimiento.de",
+                facebook: "https://www.facebook.com/mamisenmovimientoberlin",
+                instagram: "https://www.instagram.com/mamisenmovimiento_/",
+               languages: {
+                    de: "MaMis en Movimiento e.V. wurde von migrantischen Müttern für andere Mütter, Migrant*innen, Familien und Kinder gegründet, mit dem Ziel, die Verbindung zur eigenen Muttersprache zu stärken und zu fördern.Bei MaMis setzen wir uns täglich für die Förderung von Mehrsprachigkeit, Teilhabe und Demokratie ein. Wir begrüßen und unterstützen alle Initiativen, die Räume schaffen, in denen alle Sprachen und Dialekte gleichberechtigt Platz finden – sowohl in Pankow als auch in ganz Berlin, wie zum Beispiel Community MAP.",
+                
+                en: "MaMis en Movimiento e.V. was founded by migrant mothers for other mothers, migrants, families and children with the aim of strengthening and promoting the connection to their own mother tongue.at MaMis we are committed to promoting multilingualism, participation and democracy on a daily basis. We welcome and support all initiatives that create spaces in which all languages and dialects have an equal place - both in Pankow and throughout Berlin, such as Community MAP.",
+                
+                es: "MaMis en Movimiento e.V. surgió de madres migrantes para otras madres, migrantes, familias e infancias, con el objetivo de fortalecer y conectar con su lengua materna. En MaMis trabajamos cada día en promover el multilingüismo, la participación y la democracia. Saludamos todas las iniciativas donde se generen espacios en los que quepan todas las lenguas e idiomas en Pankow y en todo Berlín, como por ejemplo Community MAP."},
+                media: [
+                    "https://www.youtube.com/embed/FP-912vHyS4",
+                    "https://live.staticflickr.com/65535/54408698172_181bba6998_b.jpg"
+                   
+                ]
+            },
+            
+            {
+                name: "Initiative Eltern von besonderen Kindern (EvbK)",
+                lat: 52.53304749996317, 
+                lon: 13.432218939327093,
+                address: "Esmarchstr. 18",
+                phone: "01771 737095",
+                website: "https://www.mamisenmovimiento.de",
+                facebook: "https://www.facebook.com/mamisenmovimientoberlin",
+                instagram: "https://www.instagram.com/mamisenmovimiento_/",
+                languages: {
+                    de: "Wir sind eine Gruppe von Eltern von Kindern mit besonderen Bedürfnissen, die den Prozess der Migration und Inklusion miterleben.",
+                
+                    en: "We are a group of parents of children with special needs who are experiencing the process of migration and inclusion. "},
+                media: [
+                    "https://www.youtube.com/embed/8k2bkVXZUC0",
+                    "https://www.youtube.com/embed/gDnwQX2LLJ4"
+                    
+                ]
+            },
+            
+            {
+                name: "CineMova Ukrainian Empowerment Network e.V.",
+                lat: 52.553486859178356,
+                lon: 13.40899594814418,
+                address: "Schönfließer Str. 7, 10439 Berlin",
+                phone: "N/A",
+                website: "www.cinemova.de",
+                facebook: "https://www.facebook.com/ukrainischerkinoklubberlin",
+                instagram: "https://www.instagram.com/cinemova_berlin/",
+                languages: {
+                    de: "Seit 2009 setzen wir uns für die Sichtbarmachung der ukrainischen Kultur, Geschichte und Gegenwart in Deutschland sowie für Stärkung von Menschen mit Migrationsgeschichte ein. Dabei organisieren wir Filmvorführungen, Workshops, Stadtführungen und haben eine Karte mit dem Namen Ukrainische Orte in Berlin erstellt. Wir führen Seminare zur politischen Partizipation, andere soziale und menschenrechtliche Projekte für Menschen mit Flucht- und Migrationsgeschichte sowie Projekte zum Empowerment von Frauen durch.",
+                
+                en: "Since 2009, we have been working to raise awareness of Ukrainian culture, history and the present in Germany and to empower people with a history of migration. We organize film screenings, workshops, city tours and have created a map called Ukrainian Places in Berlin. We run seminars on political participation, other social and human rights projects for people with a history of flight and migration and projects to empower women."},
+                media: [
+                    "https://live.staticflickr.com/65535/54408722262_7a49d2915c_b.jpg",
+                    "https://live.staticflickr.com/65535/54409971040_5dc7a1b01b_b.jpg",
+                    "https://live.staticflickr.com/65535/54409772539_665e52743c_b.jpg",
+                    "https://live.staticflickr.com/65535/54409772529_225d102a6e_b.jpg",
+                    "https://live.staticflickr.com/65535/54409591146_b835474b5f_b.jpg",
+                    "https://live.staticflickr.com/65535/54409837018_fd7064db05_b.jpg",
+                    "https://live.staticflickr.com/65535/54408722197_aeef7ba8ba_o.jpg",
+                    "https://live.staticflickr.com/65535/54409591151_3319c14766_b.jpg"
+                    
                 ]
             }
         ];
@@ -660,26 +987,17 @@
             });
         }
 
-       function showNextEntry(direction) {
-    let newIndex = currentIndex + direction;
-    if (newIndex < 0) newIndex = organizations.length - 1;
-    if (newIndex >= organizations.length) newIndex = 0;
-    currentIndex = newIndex;
-    updateEntryCounter();
-    updateMarkerStyles(newIndex);
-    showEntryPanel(newIndex);
-    
-    // First invalidate size, then center after a small delay
-    map.invalidateSize();
-    setTimeout(() => {
-        const org = organizations[newIndex];
-        map.setView([org.lat, org.lon], 15, {
-            animate: false,
-            paddingTopLeft: [0, 0],  // Reset any padding
-            paddingBottomRight: [0, 0]  // Reset any padding
-        });
-    }, 100);  // Increased delay to ensure resize completes
-}
+        function showNextEntry(direction) {
+            let newIndex = currentIndex + direction;
+            if (newIndex < 0) newIndex = organizations.length - 1;
+            if (newIndex >= organizations.length) newIndex = 0;
+            currentIndex = newIndex;
+            updateEntryCounter();
+            updateMarkerStyles(newIndex);
+            showEntryPanel(newIndex);
+            map.setView([organizations[newIndex].lat, organizations[newIndex].lon], 15);
+        }
+
         function updateEntryCounter() {
             const counter = document.getElementById("entry-counter");
             counter.textContent = `${currentIndex + 1}/${organizations.length}`;
@@ -713,19 +1031,12 @@
         }
     }
     
-    // Force map to resize and recenter after transition completes
+    // Force map to resize after transition completes
     setTimeout(() => {
         map.invalidateSize();
-        setTimeout(() => {
-            const org = organizations[currentIndex];
-            map.setView([org.lat, org.lon], map.getZoom(), {
-                animate: false,
-                paddingTopLeft: [0, 0],
-                paddingBottomRight: [0, 0]
-            });
-        }, 50);
     }, 300);
 }
+
         // Handle window resize
         function handleResize() {
     const panel = document.getElementById("right-side-panel");
@@ -764,36 +1075,28 @@
 
         window.addEventListener('resize', handleResize);
 
+        // Create markers for each organization
         organizations.forEach((org, index) => {
-    var marker = L.circleMarker([org.lat, org.lon], {
-        radius: 3,
-        fillColor: "blue",
-        color: "blue",
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.8
-    }).addTo(map)
-        .bindTooltip(org.name, { permanent: false, direction: "top" })
-        .on('click', function() {
-            updateMarkerStyles(index);
-            showEntryPanel(index);
-            const panel = document.getElementById("right-side-panel");
-            if (panel.classList.contains("hidden")) {
-                toggleRightPanel();
-            }
-            // Ensure proper centering after click
-            setTimeout(() => {
-                map.invalidateSize();
-                map.setView([org.lat, org.lon], 15, {
-                    animate: false,
-                    paddingTopLeft: [0, 0],
-                    paddingBottomRight: [0, 0]
+            var marker = L.circleMarker([org.lat, org.lon], {
+                radius: 3,
+                fillColor: "blue",
+                color: "blue",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map)
+                .bindTooltip(org.name, { permanent: false, direction: "top" })
+                .on('click', function() {
+                    updateMarkerStyles(index);
+                    showEntryPanel(index);
+                    const panel = document.getElementById("right-side-panel");
+                    if (panel.classList.contains("hidden")) {
+                        toggleRightPanel();
+                    }
                 });
-            }, 100);
-        });
 
-    markers.push(marker);
-});
+            markers.push(marker);
+        });
 
         function updateMarkerStyles(selectedIndex) {
             markers.forEach((marker, index) => {
@@ -949,29 +1252,19 @@
             }
         }
 
-       function zoomTo(index) {
-    const org = organizations[index];
-    // First invalidate size
-    map.invalidateSize();
-    // Then center after a small delay
-    setTimeout(() => {
-        map.setView([org.lat, org.lon], 15, {
-            animate: false,
-            paddingTopLeft: [0, 0],
-            paddingBottomRight: [0, 0]
-        });
-    }, 100);
-    
-    updateMarkerStyles(index); 
-    showEntryPanel(index);
-    
-    const panel = document.getElementById("right-side-panel");
-    if (panel.classList.contains("hidden")) {
-        toggleRightPanel();
-    }
-    
-    document.getElementById("search-results").innerHTML = "";
-}
+        function zoomTo(index) {
+            const org = organizations[index];
+            map.setView([org.lat, org.lon], 15);
+            updateMarkerStyles(index); 
+            showEntryPanel(index);
+            
+            const panel = document.getElementById("right-side-panel");
+            if (panel.classList.contains("hidden")) {
+                toggleRightPanel();
+            }
+            
+            document.getElementById("search-results").innerHTML = "";
+        }
 
         // Add resize observer to handle window resizing
         const resizeObserver = new ResizeObserver(() => {
