@@ -119,8 +119,11 @@
         z-index: 1000;
         pointer-events: none;
         font-weight: bold;
-        justify-content: center;
-        align-items: center;
+         text-align: center; /* Zentriert den Text horizontal */
+    width: max-content; /* Oder z.B. 80% oder 300px, damit Text umbrechen kann */
+    max-width: 90%; /* Verhindert zu weiten Text bei langen Titeln */
+    white-space: normal; /* Erlaubt Zeilenumbruch */
+}
     }
         
         #right-side-panel {
