@@ -62,6 +62,9 @@
         
         #right-side-panel.hidden {
             transform: translateX(-100%);
+            width: 0;
+        padding: 0;
+        overflow: hidden;
         }
         
           #toggle-panel-btn {
@@ -137,7 +140,7 @@
         }
         
         #map-container {
-            height: 50vh;
+            height: 40vh;
         }
         
         #toggle-panel-btn {
@@ -160,11 +163,11 @@
     
     #right-side-panel:not(.hidden) + #map-container + #toggle-panel-btn {
         left: 5%; /* Adjust as needed for mobile */
-        top: 35%;
+        top: 30%;
     }
         
         #location-btn {
-            top: 11%;
+            top: 10%;
             
         }
         
