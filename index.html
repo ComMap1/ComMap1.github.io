@@ -146,24 +146,14 @@
         
         #toggle-panel-btn {
         position: absolute;
-        top: calc(85vh + 10px); /* Unterhalb des Panels */
-        left: calc(120vh + 10px);
+        bottom: 10px; /* Default position when panel is hidden */
+        right: 10px;
         z-index: 1100;
-        color: white;
-        background-color: rgba(18, 18, 18, 0.8);
-        border: none;
-        padding: 10px;
-        width: 25px;
-        height: 25px;
-        border-radius: 5px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: top 0.3s ease;
+        transition: bottom 0.3s ease;
     }
     
     #right-side-panel:not(.hidden) + #map-container + #toggle-panel-btn {
-       top: calc(25vh + 10px); /* Adjust as needed for mobile */
+        bottom: calc(60vh + 10px); /* Panel height (60vh) + margin (10px) */
     }
         
         #location-btn {
