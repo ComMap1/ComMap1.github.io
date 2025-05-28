@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Map Pankow</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
+    
+    <style>
+    /* Base Styles */
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+        background-color: #121212;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+    }
+
+    .map-title {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 28px;
+        text-shadow: 
+            -1.5px -1.5px 0 #000,
+            1.5px -1.5px 0 #000,
+            -1.5px 1.5px 0 #000,
+            1.5px 1.5px 0 #000;
+        z-index: 1000;
+        pointer-events: none;
+        font-weight: bold;
+    }
+
+    /* Main Layout */
+    #main-container {
+        display: flex;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+        flex-direction: column;
+    }
+    
+    /* Side Panel */
+    #right-side-panel {
+        background-color: #222;
+        color: white;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 1000;
+        transition: transform 0.3s ease;
+    }
+
+    /* Map Container */
+    #map-container {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #map {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        transition: all 0.3s ease;
+    }
+
+    /* Toggle Panel Button */
+    #toggle-panel-btn {
+        position: absolute;
+        z-index: 2000;
+        background-color: rgba(18, 18, 18, 0.8);
+        border: none;
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+    }
+
+    #location-btn {
+        position: absolute;
+        right: 10px;
+        z-index: 1100;
+        background-color: white;
+        border: none;
+        padding: 10px;
+        width: 30px;
+        height: 30px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #location-btn.active {
+        background-color: red;
+    }
+
+    #location-btn i {
+        color: black;
+        font-size: 18px;
+    }
+
+    /* Desktop Layout */
+    @media (min-width: 768px) {
+        #main-container {
+            flex-direction: row;
+        }
+        
+        #right-side-panel {
+            width: 300px;
+            transform: translateX(0);
+        }
+        
+        #right-side-panel.hidden {
+            transform: translateX(-100%);
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #toggle-panel-btn {
+            top: 50%;
+            right: 300px;
+            transform: translateY(-50%);
+        }
+        
+        #right-side-panel.hidden + #map-container #toggle-panel-btn {
+            right: 0;
+        }
+        
+        #location-btn {
+            top: 77px;
+        }
+    }
+
+    /* Mobile Layout */
+    @media (max-width: 767px) {
+        #main-container {
+            flex-direction: column-reverse;
+        }
+        
+        .map-title {
+            position: absolute;
+            top: 1px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 22px;
+            text-shadow: 
+                -1.5px -1.5px 0 #000,
+                1.5px -1.5px 0 #000,
+                -1.5px 1.5px 0 #000,
+                1.5px 1.5px 0 #000;
+            z-index: 1000;
+            pointer-events: none;
+            font-weight: bold;
+        }
+        
+        #right-side-panel {
+            width: 100%;
+            height: 60vh;
+            transform: translateY(100%);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+        }
+        
+        #right-side-panel.hidden {
+            transform: translateY(100%);
+        }
+        
+        #right-side-panel:not(.hidden) {
+            transform: translateY(0);
+        }
+        
+        #map-container {
+            height: 40vh;
+        }
+        
+        #toggle-panel-btn {
+            bottom: 10px;
+            right: 10px;
+            top: auto;
+        }
+        
+        #right-side-panel:not(.hidden) #toggle-panel-btn {
+            bottom: calc(60vh + 10px);
+        }
+        
+        #location-btn {
+            bottom: 76vh;
+        }
+        
+        .swiper-container {
+            height: 150px;
+        }
+    }
+
+    /* Keep all your existing component styles */
+    .pagination-controls {
+        position: absolute;
+        top: 1px;
+        left: 1px;
+        display: flex;
+        align-items: center;
+        gap: 0px;
+        z-index: 10;
+    }
+
+    .pagination-btn {
+        background: #444;
+        border: none;
+        color: white;
+        width: 15px;
+        height: 15px;
+        border-radius: 0px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .pagination-btn:hover {
+        background: #555;
+    }
+
+    .pagination-counter {
+        background: #222;
+        padding: 2px 8px;
+        border-radius: 0px;
+        font-size: 12px;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .swiper-container {
+        width: 100%;
+        height: 200px;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
+    }
+
+    .swiper-slide {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #333;
+    }
+
+    .swiper-slide img,
+    .swiper-slide iframe {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+        color: #ffffff;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto;
+        height: auto;
+        background: none;
+        margin-top: 0;
+    }
+
+    .swiper-button-next {
+        right: 10px;
+    }
+
+    .swiper-button-prev {
+        left: 10px;
+    }
+
+    .swiper-button-next::after,
+    .swiper-button-prev::after {
+        font-size: 50px;
+    }
+
+    .language-dropdown {
+        padding: 5px;
+        border-radius: 5px;
+        background: #222;
+        color: white;
+    }
+
+    .name-and-language {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    #panel-search-container {
+        background: #333;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+
+    #panel-search-container .search-input-wrapper {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+
+    #search-results {
+        background: #222;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 0;
+    }
+
+    #search-results ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    #search-results li {
+        margin-bottom: 8px;
+    }
+
+    #search-results li:last-child {
+        margin-bottom: 0;
+    }
+
+    #search-results a {
+        color: #ff6600;
+        text-decoration: underline;
+        display: block;
+        padding: 5px;
+        border-radius: 3px;
+    }
+
+    #search-results a:hover {
+        background: #333;
+    }
+
+    .social-icons img {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+    }
+
+    .address-link img {
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+    }
+
+    #panel-website-btn {
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 10px 0;
+        background: #222;
+        border-top: 0px solid #444;
+        text-align: center;
+    }
+
+    #panel-website-btn a {
+        display: block;
+        padding: 10px;
+        background: #ff6600;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 0 15px;
+    }
+
+    .leaflet-control-container .leaflet-top.leaflet-left {
+        width: 100%;
+    }
+
+    .leaflet-control-zoom {
+        left: calc(100% - 52px) !important;
+        top: 1px !important;
+    }
+
+    .pulsing-location .pulsing-dot {
+        width: 6px;
+        height: 6px;
+        background-color: red;
+        border-radius: 50%;
+        animation: pulse-animation 3s infinite;
+    }
+
+    @keyframes pulse-animation {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.5);
+            opacity: 0.5;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div id="main-container">
+        <div id="right-side-panel">
+            <div class="pagination-controls">
+                <button class="pagination-btn" onclick="showNextEntry(-1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="pagination-counter" id="entry-counter">1/2</div>
+                <button class="pagination-btn" onclick="showNextEntry(1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div id="panel-content"></div>
+        </div>
+        
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+        
+        <button id="toggle-panel-btn" onclick="toggleRightPanel()">
+            <i id="panel-arrow" class="fas fa-chevron-left"></i>
+        </button>
+        
+        <button id="location-btn" onclick="toggleLocationTracking()">
+            <i class="fa fa-map-marker"></i>
+        </button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([52.546974848382796, 13.41585853725738], 13);
+        
+        // Add this after your map initialization
+        var title = L.control({position: 'topleft'});
+        title.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'map-title');
+            div.innerHTML = 'Community Map Pankow';
+            return div;
+        };
+        title.addTo(map);
+        
+        // Add tile layers
+        L.tileLayer('https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const labelLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © OpenStreetMap contributors',
+            opacity: 0.3
+        }).addTo(map);
+
+        // Organizations data
+        var organizations = [
+            {
+                name: "Sources d'Espoir e.V.",
+                lat: 52.56522269687419,
+                lon: 13.445997821537802,
+                address: "Romain-Rolland-Straße 14-24, 13089 Berlin",
+                phone: "0176 54452144",
+                website: "https://sources-despoir.org/",
+                facebook: "https://www.facebook.com/people/Sources-de-lespoir-Quelle-der-Hoffnung/100064747714283/",
+                instagram: "https://www.instagram.com/sourcesdespoir.e.v/",
+                languages: {
+                    de: "SdE e.V. fördert Kinder und Jugendliche durch Musik, Kunst und Sport, unterstützt hilfsbedürftige Ältere und strebt gesellschaftliche Teilhabe für alle an. Ziel ist Chancengleichheit und weltweite Förderung von Toleranz, Respekt und Frieden. Die Dekolonisierung spielt eine zentrale Rolle, indem koloniale Denkmuster hinterfragt werden. Durch Veranstaltungen, Diskussionsforen und Schulungen trägt der Verein dazu bei, koloniale Strukturen zu durchbrechen und Raum für diverse Stimmen zu schaffen.",
+                    en: "SdE e.V. promotes children and young people through music, art, and sports, supports needy elderly people, and aims for social inclusion for everyone. The goal is equality of opportunity and the worldwide promotion of tolerance, respect, and peace. Decolonization plays a central role by questioning colonial thinking patterns. Through events, forums, and training, the organization helps break down colonial structures and create space for diverse voices."
+                },
+                media: [
+                    "https://www.youtube.com/embed/ejqqRCvEhEg?si=2LuJ6H8f_DruSf7X",
+                    "https://live.staticflickr.com/65535/54397200295_fe3b483286_b.jpg",
+                    "https://live.staticflickr.com/65535/54396838891_419e442710_b.jpg"
+                ]
+            },
+            {
+                name: "MigrArte Perú e.V",
+                lat: 52.534372575998916,
+                lon: 13.415462589767959,
+                address: "Kollwitzstr 43, 10405 Berlin, c/o Alvarez-Radtke",
+                phone: "0163 6380397",
+                website: "https://www.migrarteperu.de",
+                facebook: "https://www.facebook.com/migrarte19/",
+                instagram: "https://www.instagram.com/migrarteperu/",
+                languages: {
+                    de: "Wir sind ein Verein der sich für den interkulturellen, pädagogischen, künstlerischen und politischen Austausch zwischen Migrant*Innen in Berlin, Peru und Abya Yala (Lateinamerika) aus dekolonialer und ökofeministischer Perspektive einsetzt und fördert.",
+                    en: "We are an association that promotes intercultural, pedagogical, artistic and political exchange between migrants in Berlin, Peru and Abya Yala (Latin America) from a decolonial and ecofeminist perspective."
+                },
+                media: [
+                    "https://www.youtube.com/embed/GUiJzRnjPOw",
+                    "https://live.staticflickr.com/65535/54395990922_7322e78b6b_b.jpg",
+                    "https://live.staticflickr.com/65535/54395990932_3d9ffab48f_b.jpg"
+                ]
+            }
+        ];
+
+        var markers = [];
+        var currentIndex = 0;
+
+        function switchLanguage(lang, index) {
+            let org = organizations[index];
+            if (!org.languages[lang]) return;
+
+            let phoneText = lang === 'en' ? 'Phone:' : lang === 'de' ? 'Telefon:' : lang === 'es' ? 'Teléfono:' : lang === 'ru' ? 'Телефон:' : lang === 'it' ? 'Telefono:' :  lang === 'fr' ? 'Téléphone:' :  '📞'; 
+            let websiteText = lang === 'en' ? 'Visit Website' : lang === 'de' ? 'Website besuchen' : lang === 'es' ? 'Visitar el sitio web' : lang === 'ru' ? 'Посетите сайт' : lang === 'it' ? 'Visita il sito web' : lang === 'fr' ? 'Visiter le site web' : '🌐'; 
+            let addressText = lang === 'en' ? 'Address' : lang === 'de' ? 'Adresse' : lang === 'es' ? 'Dirección' : lang === 'ru' ? 'Адрес' : lang === 'it' ? 'Indirizzo' : lang === 'fr' ? 'Adresse' : '📍';
+
+            document.querySelector("#panel-content p:nth-of-type(1)").innerHTML = `
+                <a class="address-link" href="https://www.google.com/maps/search/?api=1&query=${org.lat},${org.lon}" target="_blank">
+                    <img src="https://cdn-icons-png.flaticon.com/512/5431/5431045.png">
+                    <span id="panel-address-${index}"><strong>${addressText}:</strong> ${org.address}</span>
+                </a>
+            `;          
+            document.querySelector("#panel-content p:nth-of-type(2)").innerHTML = `<strong>${phoneText}</strong> ${org.phone}`;
+            document.querySelector("#panel-content p:nth-of-type(3)").textContent = org.languages[lang];
+            document.querySelector("#panel-website-btn a").textContent = websiteText;
+        }
+
+        function getLanguageName(langCode) {
+            const languageNames = {
+                de: "Deutsch",
+                en: "English",
+                es: "Español",
+                ru: "Русский",
+                fr: "Français",
+                it: "Italiano"
+            };
+            return languageNames[langCode] || langCode.toUpperCase();
+        }
+
+        function showEntryPanel(index) {
+            currentIndex = index;
+            updateEntryCounter();
+            updateMarkerStyles(index);
+            const org = organizations[index];
+
+            let mediaSlides = org.media.map(item => {
+                if (item.includes("youtube.com")) {
+                    return `<div class="swiper-slide"><iframe src="${item}" frameborder="0" allowfullscreen></iframe></div>`;
+                } else {
+                    return `<div class="swiper-slide"><img src="${item}" /></div>`;
+                }
+            }).join("");
+
+            let languageOptions = Object.keys(org.languages)
+                .map(langCode => `<option value="${langCode}">${getLanguageName(langCode)}</option>`)
+                .join("");
+
+            let languageDropdown = `
+                <select class="language-dropdown" id="language-dropdown-${index}" onchange="switchLanguage(this.value, ${index})">
+                    ${languageOptions}
+                </select>
+            `;
+
+            let phoneText = 'Telefon:';
+            let websiteText = 'Website besuchen';
+            let addressText = 'Adresse:';
+
+            const panelContent = `
+                <div id="panel-search-container">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="search-input" placeholder="Search..." 
+                               style="padding: 8px; flex-grow: 1; border-radius: 5px; border: none; height: 20px;" 
+                               onkeydown="if (event.key === 'Enter') handleSearch()">
+                        <button onclick="handleSearch()" 
+                                style="height: 36px; width: 38px; border: none; background: #ff6600; color: white; border-radius: 5px; display: flex; justify-content: center; align-items: center;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div id="search-results"></div>
+                </div>
+                <div class="swiper-container main-swiper-${index}">
+                    <div class="swiper-wrapper">${mediaSlides}</div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+                <div class="name-and-language">
+                    <h3>${org.name}</h3>
+                    ${languageDropdown}
+                </div>
+                <p><a class="address-link" href="https://www.google.com/maps/search/?api=1&query=${org.lat},${org.lon}" target="_blank">
+                    <img src="https://cdn-icons-png.flaticon.com/512/5431/5431045.png">
+                    <span id="panel-address-${index}"><strong>${addressText}</strong> ${org.address}</span>
+                </a></p>
+                <p id="panel-phone-${index}"><strong>${phoneText}</strong> ${org.phone}</p>
+                <p id="panel-description-${index}">${org.languages.de}</p>
+                <div class="social-icons">
+                    <a href="${org.facebook}" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"></a>
+                    <a href="${org.instagram}" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"></a>
+                </div>
+                <div id="panel-website-btn">
+                    <a href="${org.website}" target="_blank" id="panel-website-${index}">${websiteText}</a>
+                </div>
+            `;
+
+            document.getElementById("panel-content").innerHTML = panelContent;
+            
+            new Swiper(`.main-swiper-${index}`, {
+                slidesPerView: 1,
+                spaceBetween: 10,
+                navigation: {
+                    nextEl: `.swiper-button-next`,
+                    prevEl: `.swiper-button-prev`
+                },
+                loop: true
+            });
+        }
+
+        function showNextEntry(direction) {
+            let newIndex = currentIndex + direction;
+            if (newIndex < 0) newIndex = organizations.length - 1;
+            if (newIndex >= organizations.length) newIndex = 0;
+            currentIndex = newIndex;
+            updateEntryCounter();
+            updateMarkerStyles(newIndex);
+            showEntryPanel(newIndex);
+            map.setView([organizations[newIndex].lat, organizations[newIndex].lon], 15);
+        }
+
+        function updateEntryCounter() {
+            const counter = document.getElementById("entry-counter");
+            counter.textContent = `${currentIndex + 1}/${organizations.length}`;
+        }
+
+        function toggleRightPanel() {
+            const panel = document.getElementById("right-side-panel");
+            const icon = document.getElementById("panel-arrow");
+            
+            panel.classList.toggle("hidden");
+            
+            if (panel.classList.contains("hidden")) {
+                icon.className = window.innerWidth < 768 ? "fas fa-chevron-up" : "fas fa-chevron-right";
+            } else {
+                icon.className = window.innerWidth < 768 ? "fas fa-chevron-down" : "fas fa-chevron-left";
+            }
+            
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
+        }
+
+        function handleResize() {
+            const panel = document.getElementById("right-side-panel");
+            const icon = document.getElementById("panel-arrow");
+            
+            if (window.innerWidth < 768) {
+                // Mobile view
+                if (panel.classList.contains("hidden")) {
+                    icon.className = "fas fa-chevron-up";
+                } else {
+                    icon.className = "fas fa-chevron-down";
+                }
+            } else {
+                // Desktop view
+                if (panel.classList.contains("hidden")) {
+                    icon.className = "fas fa-chevron-left";
+                } else {
+                    icon.className = "fas fa-chevron-right";
+                }
+            }
+            
+            map.invalidateSize();
+        }
+
+        // Initialize the panel with the first entry when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            showEntryPanel(0);
+            map.setView([organizations[0].lat, organizations[0].lon], 15);
+            handleResize();
+        });
+
+        window.addEventListener('resize', handleResize);
+
+        // Create markers for each organization
+        organizations.forEach((org, index) => {
+            var marker = L.circleMarker([org.lat, org.lon], {
+                radius: 3,
+                fillColor: "blue",
+                color: "blue",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map)
+                .bindTooltip(org.name, { permanent: false, direction: "top" })
+                .on('click', function() {
+                    updateMarkerStyles(index);
+                    showEntryPanel(index);
+                    const panel = document.getElementById("right-side-panel");
+                    if (panel.classList.contains("hidden")) {
+                        toggleRightPanel();
+                    }
+                });
+
+            markers.push(marker);
+        });
+
+        function updateMarkerStyles(selectedIndex) {
+            markers.forEach((marker, index) => {
+                if (index === selectedIndex) {
+                    marker.setStyle({
+                        fillColor: "green",
+                        color: "green",
+                        radius: 3
+                    });
+                } else {
+                    marker.setStyle({
+                        fillColor: "blue",
+                        color: "blue",
+                        radius: 3
+                    });
+                }
+            });
+        }
+
+        // Location tracking functionality
+        let isTracking = false;
+        let trackingId = null;
+        let locationMarkers = [];
+        let lastPositionMarker = null;
+        let firstLocationUpdate = true;
+
+        const locationButton = document.getElementById('location-btn');
+
+        function toggleLocationTracking() {
+            if (isTracking) {
+                stopLocationTracking();
+                locationButton.classList.remove('active');
+            } else {
+                startLocationTracking();
+                locationButton.classList.add('active');
+            }
+        }
+
+        function startLocationTracking() {
+            if (lastPositionMarker) {
+                map.removeLayer(lastPositionMarker);
+                lastPositionMarker = null;
+            }
+            
+            isTracking = true;
+            firstLocationUpdate = true;
+
+            trackingId = navigator.geolocation.watchPosition(position => {
+                const latlng = [position.coords.latitude, position.coords.longitude];
+
+                removeOldLocationMarker();
+
+                const marker = L.marker(latlng, {
+                    icon: L.divIcon({
+                        className: 'pulsing-location',
+                        html: '<div class="pulsing-dot"></div>',
+                        iconSize: [20, 20],
+                    }),
+                }).addTo(map);
+
+                locationMarkers.push(marker);
+
+                if (firstLocationUpdate) {
+                    map.setView(latlng, 13);
+                    firstLocationUpdate = false;
+                }
+
+            }, () => {
+                alert("Location access denied or unavailable.");
+                stopLocationTracking();
+                locationButton.classList.remove('active');
+            }, {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            });
+        }
+
+        function stopLocationTracking() {
+            isTracking = false;
+
+            let lastPosition = null;
+            if (locationMarkers.length > 0) {
+                lastPosition = locationMarkers[locationMarkers.length - 1].getLatLng();
+            }
+
+            while (locationMarkers.length > 0) {
+                const marker = locationMarkers.pop();
+                map.removeLayer(marker);
+            }
+
+            if (lastPosition) {
+                lastPositionMarker = L.marker(lastPosition, {
+                    icon: L.divIcon({
+                        className: 'last-position-marker',
+                        html: '<div style="width: 6px; height: 6px; background-color: red; border-radius: 50%;"></div>',
+                        iconSize: [12, 12],
+                    })
+                }).addTo(map);
+                
+                const now = new Date();
+                lastPositionMarker.bindTooltip(`Last position at ${now.toLocaleTimeString()}`, {
+                    permanent: false,
+                    direction: 'top'
+                });
+            }
+
+            if (trackingId !== null) {
+                navigator.geolocation.clearWatch(trackingId);
+                trackingId = null;
+            }
+        }
+
+        function removeOldLocationMarker() {
+            if (locationMarkers.length > 0) {
+                const oldMarker = locationMarkers.shift();
+                map.removeLayer(oldMarker);
+            }
+        }
+
+        function handleSearch() {
+            const query = document.getElementById("search-input").value.trim();
+            const resultsContainer = document.getElementById("search-results");
+            resultsContainer.innerHTML = "";
+
+            const options = {
+                includeScore: true,
+                threshold: 0.4,
+                keys: ['name', 'address']
+            };
+
+            const fuse = new Fuse(organizations, options);
+            const result = fuse.search(query);
+
+            if (result.length === 0) {
+                resultsContainer.innerHTML = "<div style='padding: 5px; color: #ccc;'>❌ No matches found.</div>";
+                return;
+            }
+
+            const bestMatches = result.slice(0, 5);
+            if (bestMatches.length === 1) {
+                const match = bestMatches[0];
+                const idx = organizations.indexOf(match.item);
+                zoomTo(idx);
+            } else {
+                const resultsList = document.createElement("div");
+                bestMatches.forEach(match => {
+                    const idx = organizations.indexOf(match.item);
+                    const resultItem = document.createElement("div");
+                    resultItem.innerHTML = `<a href="#" onclick="zoomTo(${idx}); return false;">${match.item.name} - ${match.item.address}</a>`;
+                    resultsContainer.appendChild(resultItem);
+                });
+            }
+        }
+
+        function zoomTo(index) {
+            const org = organizations[index];
+            map.setView([org.lat, org.lon], 15);
+            updateMarkerStyles(index); 
+            showEntryPanel(index);
+            
+            const panel = document.getElementById("right-side-panel");
+            if (panel.classList.contains("hidden")) {
+                toggleRightPanel();
+            }
+            
+            document.getElementById("search-results").innerHTML = "";
+        }
+
+        // Add resize observer to handle window resizing
+        const resizeObserver = new ResizeObserver(() => {
+            map.invalidateSize();
+        });
+        resizeObserver.observe(document.getElementById('map-container'));
+    </script>
+</body>
+</html>
