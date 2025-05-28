@@ -142,8 +142,17 @@
         }
         
         #map-container {
-            height: 40vh;
-        }
+        height: 40vh;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    
+    #map {
+        width: 100% !important;
+        height: 100% !important;
+    }
         
         #toggle-panel-btn {
         position: absolute;
@@ -651,17 +660,26 @@
             });
         }
 
-        function showNextEntry(direction) {
-            let newIndex = currentIndex + direction;
-            if (newIndex < 0) newIndex = organizations.length - 1;
-            if (newIndex >= organizations.length) newIndex = 0;
-            currentIndex = newIndex;
-            updateEntryCounter();
-            updateMarkerStyles(newIndex);
-            showEntryPanel(newIndex);
-            map.setView([organizations[newIndex].lat, organizations[newIndex].lon], 15);
-        }
-
+       function showNextEntry(direction) {
+    let newIndex = currentIndex + direction;
+    if (newIndex < 0) newIndex = organizations.length - 1;
+    if (newIndex >= organizations.length) newIndex = 0;
+    currentIndex = newIndex;
+    updateEntryCounter();
+    updateMarkerStyles(newIndex);
+    showEntryPanel(newIndex);
+    
+    // First invalidate size, then center after a small delay
+    map.invalidateSize();
+    setTimeout(() => {
+        const org = organizations[newIndex];
+        map.setView([org.lat, org.lon], 15, {
+            animate: false,
+            paddingTopLeft: [0, 0],  // Reset any padding
+            paddingBottomRight: [0, 0]  // Reset any padding
+        });
+    }, 100);  // Increased delay to ensure resize completes
+}
         function updateEntryCounter() {
             const counter = document.getElementById("entry-counter");
             counter.textContent = `${currentIndex + 1}/${organizations.length}`;
@@ -695,12 +713,19 @@
         }
     }
     
-    // Force map to resize after transition completes
+    // Force map to resize and recenter after transition completes
     setTimeout(() => {
         map.invalidateSize();
+        setTimeout(() => {
+            const org = organizations[currentIndex];
+            map.setView([org.lat, org.lon], map.getZoom(), {
+                animate: false,
+                paddingTopLeft: [0, 0],
+                paddingBottomRight: [0, 0]
+            });
+        }, 50);
     }, 300);
 }
-
         // Handle window resize
         function handleResize() {
     const panel = document.getElementById("right-side-panel");
@@ -739,28 +764,36 @@
 
         window.addEventListener('resize', handleResize);
 
-        // Create markers for each organization
         organizations.forEach((org, index) => {
-            var marker = L.circleMarker([org.lat, org.lon], {
-                radius: 3,
-                fillColor: "blue",
-                color: "blue",
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map)
-                .bindTooltip(org.name, { permanent: false, direction: "top" })
-                .on('click', function() {
-                    updateMarkerStyles(index);
-                    showEntryPanel(index);
-                    const panel = document.getElementById("right-side-panel");
-                    if (panel.classList.contains("hidden")) {
-                        toggleRightPanel();
-                    }
+    var marker = L.circleMarker([org.lat, org.lon], {
+        radius: 3,
+        fillColor: "blue",
+        color: "blue",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    }).addTo(map)
+        .bindTooltip(org.name, { permanent: false, direction: "top" })
+        .on('click', function() {
+            updateMarkerStyles(index);
+            showEntryPanel(index);
+            const panel = document.getElementById("right-side-panel");
+            if (panel.classList.contains("hidden")) {
+                toggleRightPanel();
+            }
+            // Ensure proper centering after click
+            setTimeout(() => {
+                map.invalidateSize();
+                map.setView([org.lat, org.lon], 15, {
+                    animate: false,
+                    paddingTopLeft: [0, 0],
+                    paddingBottomRight: [0, 0]
                 });
-
-            markers.push(marker);
+            }, 100);
         });
+
+    markers.push(marker);
+});
 
         function updateMarkerStyles(selectedIndex) {
             markers.forEach((marker, index) => {
@@ -916,19 +949,29 @@
             }
         }
 
-        function zoomTo(index) {
-            const org = organizations[index];
-            map.setView([org.lat, org.lon], 15);
-            updateMarkerStyles(index); 
-            showEntryPanel(index);
-            
-            const panel = document.getElementById("right-side-panel");
-            if (panel.classList.contains("hidden")) {
-                toggleRightPanel();
-            }
-            
-            document.getElementById("search-results").innerHTML = "";
-        }
+       function zoomTo(index) {
+    const org = organizations[index];
+    // First invalidate size
+    map.invalidateSize();
+    // Then center after a small delay
+    setTimeout(() => {
+        map.setView([org.lat, org.lon], 15, {
+            animate: false,
+            paddingTopLeft: [0, 0],
+            paddingBottomRight: [0, 0]
+        });
+    }, 100);
+    
+    updateMarkerStyles(index); 
+    showEntryPanel(index);
+    
+    const panel = document.getElementById("right-side-panel");
+    if (panel.classList.contains("hidden")) {
+        toggleRightPanel();
+    }
+    
+    document.getElementById("search-results").innerHTML = "";
+}
 
         // Add resize observer to handle window resizing
         const resizeObserver = new ResizeObserver(() => {
