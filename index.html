@@ -86,7 +86,7 @@
     }
     
     #right-side-panel:not(.hidden) + #map-container + #toggle-panel-btn {
-        left: 38%; /* Adjust as needed for mobile */
+        left: 33%; /* Adjust as needed for mobile */
         top: 5%;
     }
        
@@ -125,11 +125,13 @@
             width: 100%;
             height: 60vh;
             transform: translateY(100%);
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
-        }
+            position: fixed; /* Changed from absolute to fixed */
+        bottom: 0;
+        left: 0;
+        right: 0; /* Added to ensure full width */
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+        box-sizing: border-box; /* Ensure padding is included in width */
+    }
         
         #right-side-panel.hidden {
             transform: translateY(100%);
