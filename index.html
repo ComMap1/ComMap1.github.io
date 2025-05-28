@@ -64,10 +64,10 @@
             transform: translateX(-100%);
         }
         
-       #toggle-panel-btn {
+          #toggle-panel-btn {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 5%;
+        left: 5%;
         z-index: 1100;
         color: white;
         background-color: rgba(18, 18, 18, 0.8);
@@ -79,16 +79,15 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: right 0.3s ease;
+        
     }
     
     #right-side-panel:not(.hidden) + #map-container + #toggle-panel-btn {
-        right: calc(300px + 10px); /* Panel width + margin */
+        left: 38%; /* Adjust as needed for mobile */
+        top: 5%;
     }
-        
-        #right-side-panel.hidden + #map-container + #toggle-panel-btn {
-            left: 10px;
-        }
+       
+   
         
            #location-btn {
             top: 77px;
@@ -161,11 +160,11 @@
     
     #right-side-panel:not(.hidden) + #map-container + #toggle-panel-btn {
         left: 5%; /* Adjust as needed for mobile */
-        top: 25%;
+        top: 35%;
     }
         
         #location-btn {
-            top: 10%;
+            top: 11%;
             
         }
         
