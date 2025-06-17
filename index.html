@@ -13,25 +13,14 @@
     
     <style>
     /* Base Styles */
-    * {
-        box-sizing: border-box;
+    body {
         margin: 0;
         padding: 0;
-    }
-    
-    html, body {
-        height: 100%;
-        width: 100%;
+        height: 100vh;
         overflow: hidden;
-        position: fixed;
-    }
-    
-    body {
         background-color: #121212;
         color: #ffffff;
         font-family: Arial, sans-serif;
-        touch-action: manipulation;
-        -webkit-text-size-adjust: 100%;
     }
 
     .map-title {
@@ -40,7 +29,7 @@
         left: 50%;
         transform: translateX(-50%);
         color: white;
-        font-size: 18px;
+        font-size: 28px;
         text-shadow: 
             -1.5px -1.5px 0 #000,
             1.5px -1.5px 0 #000,
@@ -49,25 +38,22 @@
         z-index: 1000;
         pointer-events: none;
         font-weight: bold;
-        text-align: center;
-        max-width: 90%;
-        white-space: normal;
-        line-height: 1.3;
     }
 
     /* Main Layout */
     #main-container {
         display: flex;
-        flex-direction: column;
-        height: 100%;
-        width: 100%;
+        height: 100vh;
         position: relative;
+        overflow: hidden;
+        flex-direction: column;
     }
 
     /* Desktop Layout */
     @media (min-width: 768px) {
         #main-container {
             flex-direction: row;
+            position: relative;
         }
         
         #right-side-panel {
@@ -88,58 +74,68 @@
         }
     }
 
-    /* Mobile Layout - Android/Huawei specific adjustments */
+    /* Mobile Layout */
     @media (max-width: 767px) {
         #main-container {
             flex-direction: column;
-            height: 100%;
         }
         
         .map-title {
-            font-size: 16px;
-            top: 5px;
+            position: absolute;
+            top: 1px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 22px;
+            text-shadow: 
+                -1.5px -1.5px 0 #000,
+                1.5px -1.5px 0 #000,
+                -1.5px 1.5px 0 #000,
+                1.5px 1.5px 0 #000;
+            z-index: 1000;
+            pointer-events: none;
+            font-weight: bold;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            width: max-content;
+            max-width: 90%;
+            white-space: normal;
         }
         
         #right-side-panel {
             width: 100%;
-            height: 40%;
-            min-height: 40%;
-            max-height: 40%;
+            height: 50vh;
             transform: none;
             position: relative;
             order: 2;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
+            bottom: auto;
+            overflow: hidden;
+            transition: height 0.3s ease;
         }
         
         #right-side-panel.hidden {
             height: 0;
-            min-height: 0;
-            overflow: hidden;
+            width: 0;
             padding: 0;
+            overflow: hidden;
         }
         
         #map-container {
-            height: 60%;
-            min-height: 60%;
-            max-height: 60%;
-            position: relative;
-            flex-shrink: 0;
+            height: 100vh;
+            transition: height 0.3s ease;
         }
         
         #right-side-panel:not(.hidden) + #map-container {
-            height: 60%;
-            min-height: 60%;
-            max-height: 60%;
+            height: 50vh;
+        }
+        
+        #location-btn {
+            top: 77px;
         }
         
         .swiper-container {
-            height: 120px;
-        }
-        
-        #panel-content {
-            padding-bottom: 60px;
+            height: 150px;
         }
     }
 
@@ -147,12 +143,13 @@
     #right-side-panel {
         background-color: #222;
         color: white;
-        padding: 12px;
+        padding: 15px;
+        overflow-y: auto;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 15px;
         z-index: 1000;
-        transition: height 0.3s ease;
+        transition: transform 0.3s ease;
     }
 
     /* Map Container */
@@ -168,6 +165,7 @@
         left: 0;
         right: 0;
         bottom: 0;
+        transition: all 0.3s ease;
     }
 
     /* Toggle Button Styles */
@@ -178,14 +176,13 @@
         background-color: rgba(18, 18, 18, 0.8);
         border: none;
         padding: 10px;
-        width: 35px;
-        height: 35px;
+        width: 25px;
+        height: 25px;
         border-radius: 5px;
         display: flex;
         justify-content: center;
         align-items: center;
         transition: all 0.3s ease;
-        touch-action: manipulation;
     }
 
     /* Desktop Toggle Button */
@@ -209,25 +206,23 @@
         }
         
         #right-side-panel:not(.hidden) + #map-container #toggle-panel-btn {
-            bottom: calc(40% + 10px);
+            bottom: calc(50vh + 10px);
         }
     }
 
     #location-btn {
         position: absolute;
         right: 10px;
-        top: 10px;
         z-index: 1100;
         background-color: white;
         border: none;
         padding: 10px;
-        width: 35px;
-        height: 35px;
+        width: 30px;
+        height: 30px;
         border-radius: 5px;
         display: flex;
         justify-content: center;
         align-items: center;
-        touch-action: manipulation;
     }
 
     #location-btn.active {
@@ -239,7 +234,7 @@
         font-size: 18px;
     }
 
-    /* Component styles */
+    /* Keep all your existing component styles */
     .pagination-controls {
         position: absolute;
         top: 1px;
@@ -254,14 +249,18 @@
         background: #444;
         border: none;
         color: white;
-        width: 20px;
-        height: 20px;
+        width: 15px;
+        height: 15px;
         border-radius: 0px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 12px;
+    }
+
+    .pagination-btn:hover {
+        background: #555;
     }
 
     .pagination-counter {
@@ -275,10 +274,11 @@
 
     .swiper-container {
         width: 100%;
-        height: 150px;
-        border-radius: 8px;
+        height: 200px;
+        border-radius: 10px;
         position: relative;
         overflow: hidden;
+        box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
     }
 
     .swiper-slide {
@@ -300,25 +300,30 @@
         color: #ffffff;
         top: 50%;
         transform: translateY(-50%);
-        width: 30px;
-        height: 30px;
-        background: rgba(0,0,0,0.5);
-        border-radius: 50%;
+        width: auto;
+        height: auto;
+        background: none;
         margin-top: 0;
+    }
+
+    .swiper-button-next {
+        right: 10px;
+    }
+
+    .swiper-button-prev {
+        left: 10px;
     }
 
     .swiper-button-next::after,
     .swiper-button-prev::after {
-        font-size: 20px;
+        font-size: 50px;
     }
 
     .language-dropdown {
-        padding: 8px;
+        padding: 5px;
         border-radius: 5px;
         background: #222;
         color: white;
-        border: none;
-        font-size: 14px;
     }
 
     .name-and-language {
@@ -348,12 +353,30 @@
         margin-top: 0;
     }
 
+    #search-results ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    #search-results li {
+        margin-bottom: 8px;
+    }
+
+    #search-results li:last-child {
+        margin-bottom: 0;
+    }
+
     #search-results a {
         color: #ff6600;
         text-decoration: underline;
         display: block;
         padding: 5px;
         border-radius: 3px;
+    }
+
+    #search-results a:hover {
+        background: #333;
     }
 
     .social-icons img {
@@ -369,44 +392,56 @@
     }
 
     #panel-website-btn {
-        position: fixed;
+        position: sticky;
         bottom: 0;
         left: 0;
         width: 100%;
-        padding: 10px;
+        padding: 10px 0;
         background: #222;
-        border-top: 1px solid #444;
-        z-index: 1001;
+        border-top: 0px solid #444;
+        text-align: center;
     }
 
     #panel-website-btn a {
         display: block;
-        padding: 12px;
+        padding: 10px;
         background: #ff6600;
         color: white;
         text-decoration: none;
         border-radius: 5px;
-        text-align: center;
-        font-weight: bold;
+        margin: 0 15px;
+    }
+
+    .leaflet-control-container .leaflet-top.leaflet-left {
+        width: 100%;
     }
 
     .leaflet-control-zoom {
-        left: calc(100% - 60px) !important;
-        top: 10px !important;
+        left: calc(100% - 52px) !important;
+        top: 1px !important;
     }
 
     .pulsing-location .pulsing-dot {
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
         background-color: red;
         border-radius: 50%;
-        animation: pulse-animation 2s infinite;
+        animation: pulse-animation 3s infinite;
     }
 
     @keyframes pulse-animation {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.5); opacity: 0.7; }
-        100% { transform: scale(1); opacity: 1; }
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.5);
+            opacity: 0.5;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
     }
     </style>
 </head>
@@ -432,9 +467,6 @@
                 </button>
             </div>
             <div id="panel-content"></div>
-            <div id="panel-website-btn">
-                <a href="#" target="_blank">Website besuchen</a>
-            </div>
         </div>
     </div>
 
@@ -530,9 +562,9 @@
             let org = organizations[index];
             if (!org.languages[lang]) return;
 
-            let phoneText = lang === 'en' ? 'Phone:' : lang === 'de' ? 'Telefon:' : '📞'; 
-            let websiteText = lang === 'en' ? 'Visit Website' : lang === 'de' ? 'Website besuchen' : '🌐'; 
-            let addressText = lang === 'en' ? 'Address' : lang === 'de' ? 'Adresse' : '📍';
+            let phoneText = lang === 'en' ? 'Phone:' : lang === 'de' ? 'Telefon:' : lang === 'es' ? 'Teléfono:' : lang === 'ru' ? 'Телефон:' : lang === 'it' ? 'Telefono:' :  lang === 'fr' ? 'Téléphone:' :  '📞'; 
+            let websiteText = lang === 'en' ? 'Visit Website' : lang === 'de' ? 'Website besuchen' : lang === 'es' ? 'Visitar el sitio web' : lang === 'ru' ? 'Посетите сайт' : lang === 'it' ? 'Visita il sito web' : lang === 'fr' ? 'Visiter le site web' : '🌐'; 
+            let addressText = lang === 'en' ? 'Address' : lang === 'de' ? 'Adresse' : lang === 'es' ? 'Dirección' : lang === 'ru' ? 'Адрес' : lang === 'it' ? 'Indirizzo' : lang === 'fr' ? 'Adresse' : '📍';
 
             document.querySelector("#panel-content p:nth-of-type(1)").innerHTML = `
                 <a class="address-link" href="https://www.google.com/maps/search/?api=1&query=${org.lat},${org.lon}" target="_blank">
@@ -543,7 +575,6 @@
             document.querySelector("#panel-content p:nth-of-type(2)").innerHTML = `<strong>${phoneText}</strong> ${org.phone}`;
             document.querySelector("#panel-content p:nth-of-type(3)").textContent = org.languages[lang];
             document.querySelector("#panel-website-btn a").textContent = websiteText;
-            document.querySelector("#panel-website-btn a").href = org.website;
         }
 
         function getLanguageName(langCode) {
@@ -618,6 +649,9 @@
                     <a href="${org.facebook}" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"></a>
                     <a href="${org.instagram}" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"></a>
                 </div>
+                <div id="panel-website-btn">
+                    <a href="${org.website}" target="_blank" id="panel-website-${index}">${websiteText}</a>
+                </div>
             `;
 
             document.getElementById("panel-content").innerHTML = panelContent;
@@ -631,9 +665,6 @@
                 },
                 loop: true
             });
-            
-            document.querySelector("#panel-website-btn a").textContent = websiteText;
-            document.querySelector("#panel-website-btn a").href = org.website;
         }
 
         function showNextEntry(direction) {
@@ -659,45 +690,64 @@
             panel.classList.toggle("hidden");
             
             if (panel.classList.contains("hidden")) {
-                icon.className = window.innerWidth < 768 ? "fas fa-chevron-up" : "fas fa-chevron-right";
+                if (window.innerWidth < 768) {
+                    icon.className = "fas fa-chevron-up";
+                } else {
+                    icon.className = "fas fa-chevron-right";
+                }
             } else {
-                icon.className = window.innerWidth < 768 ? "fas fa-chevron-down" : "fas fa-chevron-left";
+                if (window.innerWidth < 768) {
+                    icon.className = "fas fa-chevron-down";
+                } else {
+                    icon.className = "fas fa-chevron-left";
+                }
                 if (document.getElementById("panel-content").innerHTML.trim() === "") {
                     showEntryPanel(0);
                 }
             }
             
+            // Force map to resize after transition completes
             setTimeout(() => {
                 map.invalidateSize();
-                // Scroll to top when opening panel
-                if (!panel.classList.contains("hidden") && window.innerWidth < 768) {
-                    panel.scrollTo(0, 0);
-                }
             }, 300);
+        }
+
+        function handleResize() {
+            const panel = document.getElementById("right-side-panel");
+            const icon = document.getElementById("panel-arrow");
+            
+            if (window.innerWidth < 768) {
+                // Mobile view
+                if (panel.classList.contains("hidden")) {
+                    icon.className = "fas fa-chevron-up";
+                } else {
+                    icon.className = "fas fa-chevron-down";
+                }
+            } else {
+                // Desktop view
+                if (panel.classList.contains("hidden")) {
+                    icon.className = "fas fa-chevron-right";
+                } else {
+                    icon.className = "fas fa-chevron-left";
+                }
+            }
+            
+            map.invalidateSize();
         }
 
         // Initialize the panel with the first entry when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             showEntryPanel(0);
             map.setView([organizations[0].lat, organizations[0].lon], 15);
-            
-            // Android/Huawei specific adjustments
-            if (/android/i.test(navigator.userAgent)) {
-                document.body.style.height = 'calc(100% - 1px)';
-                setTimeout(() => {
-                    document.body.style.height = '100%';
-                }, 100);
-            }
+            handleResize();
         });
 
-        window.addEventListener('resize', function() {
-            map.invalidateSize();
-        });
+        window.addEventListener('resize', handleResize);
 
         // Create markers for each organization
         organizations.forEach((org, index) => {
             var marker = L.circleMarker([org.lat, org.lon], {
-                radius: 8,
+                radius: 3,
                 fillColor: "blue",
                 color: "blue",
                 weight: 1,
@@ -723,13 +773,13 @@
                     marker.setStyle({
                         fillColor: "green",
                         color: "green",
-                        radius: 10
+                        radius: 3
                     });
                 } else {
                     marker.setStyle({
                         fillColor: "blue",
                         color: "blue",
-                        radius: 8
+                        radius: 3
                     });
                 }
             });
@@ -779,7 +829,7 @@
                 locationMarkers.push(marker);
 
                 if (firstLocationUpdate) {
-                    map.setView(latlng, 15);
+                    map.setView(latlng, 13);
                     firstLocationUpdate = false;
                 }
 
@@ -811,8 +861,8 @@
                 lastPositionMarker = L.marker(lastPosition, {
                     icon: L.divIcon({
                         className: 'last-position-marker',
-                        html: '<div style="width: 8px; height: 8px; background-color: red; border-radius: 50%;"></div>',
-                        iconSize: [16, 16],
+                        html: '<div style="width: 6px; height: 6px; background-color: red; border-radius: 50%;"></div>',
+                        iconSize: [12, 12],
                     })
                 }).addTo(map);
                 
