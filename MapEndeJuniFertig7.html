@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Map Pankow</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
+    
+    <style>
+    /* Base Styles */
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+        background-color: #121212;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+    }
+
+    .map-title {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 28px;
+        text-shadow: 
+            -1.5px -1.5px 0 #000,
+            1.5px -1.5px 0 #000,
+            -1.5px 1.5px 0 #000,
+            1.5px 1.5px 0 #000;
+        z-index: 1000;
+        pointer-events: none;
+        font-weight: bold;
+    }
+    
+    
+       .custom-mso-icon i {
+        color: #FF5733;
+        font-size: 25px;
+        text-shadow: 0 0 3px rgba(0,0,0,0.5);
+    }
+    
+    .custom-library-icon i {
+        color: #3498DB;
+        font-size: 25px;
+        text-shadow: 0 0 3px rgba(0,0,0,0.5);
+    }
+    
+    .custom-highlighted-mso-icon i {
+        color: #2ECC71;
+        font-size: 30px;
+        text-shadow: 0 0 5px rgba(0,0,0,0.7);
+    }
+    
+    .custom-highlighted-library-icon i {
+        color: #2ECC71;
+        font-size: 30px;
+        text-shadow: 0 0 5px rgba(0,0,0,0.7);
+    }
+
+    /* Main Layout */
+    #main-container {
+        display: flex;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+        flex-direction: column;
+    }
+
+    /* Desktop Layout */
+    @media (min-width: 768px) {
+        #main-container {
+            flex-direction: row;
+            position: relative;
+        }
+        
+        #right-side-panel {
+            width: 300px;
+            order: -1;
+            transform: translateX(0);
+        }
+        
+        #right-side-panel.hidden {
+            transform: translateX(-100%);
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #location-btn {
+            top: 77px;
+        }
+    }
+
+    /* Mobile Layout */
+    @media (max-width: 767px) {
+        #main-container {
+            flex-direction: column;
+        }
+        
+        .map-title {
+            position: absolute;
+            top: 1px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 22px;
+            text-shadow: 
+                -1.5px -1.5px 0 #000,
+                1.5px -1.5px 0 #000,
+                -1.5px 1.5px 0 #000,
+                1.5px 1.5px 0 #000;
+            z-index: 1000;
+            pointer-events: none;
+            font-weight: bold;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            width: max-content;
+            max-width: 90%;
+            white-space: normal;
+        }
+        
+        #right-side-panel {
+            width: 100%;
+            height: 50vh;
+            transform: none;
+            position: relative;
+            order: 2;
+            bottom: auto;
+            overflow: hidden;
+            transition: height 0.3s ease;
+        }
+        
+        #right-side-panel.hidden {
+            height: 0;
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #map-container {
+            height: 100vh;
+            transition: height 0.3s ease;
+        }
+        
+        #right-side-panel:not(.hidden) + #map-container {
+            height: 50vh;
+        }
+        
+        #location-btn {
+            top: 77px;
+        }
+        
+        .swiper-container {
+            height: 150px;
+        }
+    }
+
+    /* Side Panel */
+    #right-side-panel {
+        background-color: #222;
+        color: white;
+        padding: 15px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 1000;
+        transition: transform 0.3s ease;
+    }
+
+    /* Map Container */
+    #map-container {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #map {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        transition: all 0.3s ease;
+    }
+
+    /* Toggle Button Styles */
+    #toggle-panel-btn {
+        position: absolute;
+        z-index: 1100;
+        color: white;
+        background-color: rgba(18, 18, 18, 0.8);
+        border: none;
+        padding: 10px;
+        width: 25px;
+        height: 25px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    /* Desktop Toggle Button */
+    @media (min-width: 768px) {
+        #toggle-panel-btn {
+            top: 10px;
+            left: 10px;
+        }
+        
+        #right-side-panel:not(.hidden) + #map-container #toggle-panel-btn {
+            left: calc(300px + 10px);
+        }
+    }
+
+    /* Mobile Toggle Button */
+    @media (max-width: 767px) {
+        #toggle-panel-btn {
+            bottom: 10px;
+            left: 10px;
+            top: auto;
+        }
+        
+        #right-side-panel:not(.hidden) + #map-container #toggle-panel-btn {
+            bottom: calc(50vh + 10px);
+        }
+    }
+
+    #location-btn {
+        position: absolute;
+        right: 10px;
+        z-index: 1100;
+        background-color: white;
+        border: none;
+        padding: 10px;
+        width: 30px;
+        height: 30px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #location-btn.active {
+        background-color: red;
+    }
+
+    #location-btn i {
+        color: black;
+        font-size: 18px;
+    }
+
+    /* Keep all your existing component styles */
+    .pagination-controls {
+        position: absolute;
+        top: 1px;
+        left: 1px;
+        display: flex;
+        align-items: center;
+        gap: 0px;
+        z-index: 10;
+    }
+
+    .pagination-btn {
+        background: #444;
+        border: none;
+        color: white;
+        width: 15px;
+        height: 15px;
+        border-radius: 0px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .pagination-btn:hover {
+        background: #555;
+    }
+
+    .pagination-counter {
+        background: #222;
+        padding: 2px 8px;
+        border-radius: 0px;
+        font-size: 12px;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .swiper-container {
+        width: 100%;
+        height: 200px;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
+    }
+
+    .swiper-slide {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #333;
+    }
+
+    .swiper-slide img,
+    .swiper-slide iframe {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+        color: #ffffff;
+        top: 50%;
+        transform: translateY(-50%);
+        width: auto;
+        height: auto;
+        background: none;
+        margin-top: 0;
+    }
+
+    .swiper-button-next {
+        right: 10px;
+    }
+
+    .swiper-button-prev {
+        left: 10px;
+    }
+
+    .swiper-button-next::after,
+    .swiper-button-prev::after {
+        font-size: 50px;
+    }
+
+    .language-dropdown {
+        padding: 5px;
+        border-radius: 5px;
+        background: #222;
+        color: white;
+    }
+
+    .name-and-language {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    #panel-search-container {
+        background: #333;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 5px;
+    }
+
+    #panel-search-container .search-input-wrapper {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+
+    #search-results {
+        background: #222;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 0;
+    }
+
+    #search-results ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    #search-results li {
+        margin-bottom: 8px;
+    }
+
+    #search-results li:last-child {
+        margin-bottom: 0;
+    }
+
+    #search-results a {
+        color: #ff6600;
+        text-decoration: underline;
+        display: block;
+        padding: 5px;
+        border-radius: 3px;
+    }
+
+    #search-results a:hover {
+        background: #333;
+    }
+
+    .social-icons img {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+    }
+
+    .address-link img {
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+    }
+
+    #panel-website-btn {
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 10px 0;
+        background: #222;
+        border-top: 0px solid #444;
+        text-align: center;
+    }
+
+    #panel-website-btn a {
+        display: block;
+        padding: 10px;
+        background: #ff6600;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 0 15px;
+    }
+
+    .leaflet-control-container .leaflet-top.leaflet-left {
+        width: 100%;
+    }
+
+    .leaflet-control-zoom {
+        left: calc(100% - 52px) !important;
+        top: 1px !important;
+    }
+
+    .pulsing-location .pulsing-dot {
+        width: 6px;
+        height: 6px;
+        background-color: red;
+        border-radius: 50%;
+        animation: pulse-animation 3s infinite;
+    }
+
+    @keyframes pulse-animation {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.5);
+            opacity: 0.5;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div id="main-container">
+        <div id="map-container">
+            <div id="map"></div>
+            <button id="toggle-panel-btn" onclick="toggleRightPanel()">
+                <i id="panel-arrow" class="fas fa-chevron-up"></i>
+            </button>
+            <button id="location-btn" onclick="toggleLocationTracking()">
+                <i class="fa fa-map-marker"></i>
+            </button>
+        </div>
+        <div id="right-side-panel">
+            <div class="pagination-controls">
+                <button class="pagination-btn" onclick="showNextEntry(-1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="pagination-counter" id="entry-counter">1/2</div>
+                <button class="pagination-btn" onclick="showNextEntry(1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div id="panel-content"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([52.546974848382796, 13.41585853725738], 13);
+        
+       
+       // Define icon styles
+// Define icon styles using Font Awesome
+var msoIcon = L.divIcon({
+    className: 'custom-mso-icon',
+    html: '<i class="fa-solid fa-star"></i>',
+    iconSize: [25, 25],
+    iconAnchor: [12, 25]
+});
+
+var libraryIcon = L.divIcon({
+    className: 'custom-library-icon',
+    html: '<i class="fas fa-book"></i>',
+    iconSize: [25, 25],
+    iconAnchor: [12, 25]
+});
+
+var highlightedMsoIcon = L.divIcon({
+    className: 'custom-highlighted-mso-icon',
+    html: '<i class="fa-solid fa-star"></i>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 30]
+});
+
+var highlightedLibraryIcon = L.divIcon({
+    className: 'custom-highlighted-library-icon',
+    html: '<i class="fa-solid fa-book"></i>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 30]
+});
+       
+       
+       
+       // Add title control
+        var title = L.control({position: 'topleft'});
+        title.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'map-title');
+            div.innerHTML = 'Community Map Pankow';
+            return div;
+        };
+        title.addTo(map);
+        
+        // Add tile layers
+        L.tileLayer('https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg', {
+            attribution: 'Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA.,&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const labelLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © OpenStreetMap contributors',
+            opacity: 0.3
+        }).addTo(map);
+
+        // Organizations data
+        var organizations = [
+            {
+                name: "Sources d'Espoir e.V.",
+                type: "mso",
+                lat: 52.56522269687419,
+                lon: 13.445997821537802,
+                address: "Romain-Rolland-Straße 14-24, 13089 Berlin",
+                phone: "0176 54452144",
+                website: "https://sources-despoir.org/",
+                facebook: "https://www.facebook.com/people/Sources-de-lespoir-Quelle-der-Hoffnung/100064747714283/",
+                instagram: "https://www.instagram.com/sourcesdespoir.e.v/",
+                languages: {
+                    de: "SdE e.V. fördert Kinder und Jugendliche durch Musik, Kunst und Sport, unterstützt hilfsbedürftige Ältere und strebt gesellschaftliche Teilhabe für alle an. Ziel ist Chancengleichheit und weltweite Förderung von Toleranz, Respekt und Frieden. Die Dekolonisierung spielt eine zentrale Rolle, indem koloniale Denkmuster hinterfragt werden. Durch Veranstaltungen, Diskussionsforen und Schulungen trägt der Verein dazu bei, koloniale Strukturen zu durchbrechen und Raum für diverse Stimmen zu schaffen.",
+                    en: "SdE e.V. promotes children and young people through music, art, and sports, supports needy elderly people, and aims for social inclusion for everyone. The goal is equality of opportunity and the worldwide promotion of tolerance, respect, and peace. Decolonization plays a central role by questioning colonial thinking patterns. Through events, forums, and training, the organization helps break down colonial structures and create space for diverse voices."
+                },
+                media: [
+                    "https://www.youtube.com/embed/ejqqRCvEhEg?si=2LuJ6H8f_DruSf7X",
+                    "https://live.staticflickr.com/65535/54397200295_fe3b483286_b.jpg",
+                    "https://live.staticflickr.com/65535/54396838891_419e442710_b.jpg",
+                    "https://live.staticflickr.com/65535/54397016504_9a9e7b538e_b.jpg",
+                    "https://live.staticflickr.com/65535/54395949017_1b6ed2c9a9_b.jpg",
+                    "https://live.staticflickr.com/65535/54397070383_aa4126fa74_b.jpg",
+                    "https://live.staticflickr.com/65535/54396838741_c1db91d3b7_b.jpg",
+                    "https://live.staticflickr.com/65535/54397016649_d4fd07748c_b.jpg",
+                    "https://live.staticflickr.com/65535/54397070828_742bd80a77_b.jpg",
+                    "https://live.staticflickr.com/65535/54397016659_06cdf87e4a_b.jpg"
+                ]
+            },
+            {
+                name: "MigrArte Perú e.V",
+                type: "mso",
+                lat: 52.534372575998916,
+                lon: 13.415462589767959,
+                address: "Kollwitzstr 43, 10405 Berlin, c/o Alvarez-Radtke",
+                phone: "0163 6380397",
+                website: "https://www.migrarteperu.de",
+                facebook: "https://www.facebook.com/migrarte19/",
+                instagram: "https://www.instagram.com/migrarteperu/",
+                languages: {
+                    de: "Wir sind ein Verein der sich für den interkulturellen, pädagogischen, künstlerischen und politischen Austausch zwischen Migrant*Innen in Berlin, Peru und Abya Yala (Lateinamerika) aus dekolonialer und ökofeministischer Perspektive einsetzt und fördert.",
+                    en: "We are an association that promotes intercultural, pedagogical, artistic and political exchange between migrants in Berlin, Peru and Abya Yala (Latin America) from a decolonial and ecofeminist perspective."
+                },
+                media: [
+                    "https://www.youtube.com/embed/GUiJzRnjPOw",
+                    "https://live.staticflickr.com/65535/54395990922_7322e78b6b_b.jpg",
+                    "https://live.staticflickr.com/65535/54395990932_3d9ffab48f_b.jpg",
+                    "https://live.staticflickr.com/65535/54397058394_56393d3469_b.jpg",
+                    "https://live.staticflickr.com/65535/54397112698_568ae2de31_b.jpg",
+                    "https://live.staticflickr.com/65535/54397112693_9a896a988d_b.jpg",
+                    "https://live.staticflickr.com/65535/54397243025_50b03f2285_b.jpg",
+                    "https://live.staticflickr.com/65535/54397242970_ac5850b156_b.jpg",
+                    "https://live.staticflickr.com/65535/54397112633_ec7c6a6244_b.jpg",
+                    "https://live.staticflickr.com/65535/54397242950_94463b8369_b.jpg",
+                    "https://live.staticflickr.com/65535/54397112598_0e31af30e1_b.jpg",
+                    "https://live.staticflickr.com/65535/54395990792_8f580eb75e_b.jpg",
+                    "https://live.staticflickr.com/65535/54396881746_16211d9a44_b.jpg",
+                    "https://live.staticflickr.com/65535/54395990787_24d1b9abcd_b.jpg",
+                    "https://live.staticflickr.com/65535/54397078354_9977cff46e_b.jpg"
+                ]
+            },
+{
+                name: "InterFem Collective e.V.",
+                type: "mso",
+                lat: 52.55191453182032,
+                lon: 13.41621063641735,
+                address: "Erich-Weinert-Str. 11, 10439 Berlin",
+                phone: "N/A",
+                website: "https://www.interfem.org",
+                facebook: "https://www.facebook.com/InterFemCollective/",
+                instagram: "https://www.instagram.com/interfemcollective/",
+                languages: {
+                    de: "InterFem Collective e.V. ist ein selbstorganisierter, migrantischer und intersektional-feministischer Verein mit Sitz in Berlin. Unser Ziel ist es, migrantische, BIPoC und queere FLINTA* Menschen durch künstlerischen Ausdruck und Aktivismus zu stärken und eine solidarische, dekoloniale Gemeinschaft zu schaffen.",
+                    en: "InterFem Collective e.V. is a self-organized, migrant and intersectional-feminist association based in Berlin. Our goal is to empower migrant, BIPoC and queer FLINTA* people through artistic expression and activism and to create a solidary, decolonial community."
+                   
+                },
+                media: [
+                    "https://www.youtube.com/embed/mMB1VL01HBQ",
+                    "https://live.staticflickr.com/65535/54397271305_5e6eacc430_b.jpg",
+                    "https://live.staticflickr.com/65535/54397271325_d6441879c6_o.jpg",
+                    "https://live.staticflickr.com/65535/54397271300_b0a94fec39_o.jpg",
+                    "https://live.staticflickr.com/65535/54397086739_0b9e0a9a3f_b.jpg",
+                    "https://live.staticflickr.com/65535/54396909796_f386a514f3_b.jpg",
+                    "https://live.staticflickr.com/65535/54397140978_418df81a7b_o.jpg",
+                    "https://live.staticflickr.com/65535/54396019597_4743b67b4d_o.jpg"
+                ]
+            },
+            
+            {
+                name: "Verein Partnerschaft Deutschland Afrika e.V. / VPDA e.V.",
+                type: "mso",
+                lat: 52.61013251032835,
+                lon: 13.430259233348377,
+                address: "Postfach 510640, 13366 Berlin",
+                phone: "+49(0)170-7202928 / +49(0)152-14179130",
+                website: "https://vpda-berlin.org/",
+                facebook: "https://www.facebook.com/VPDAeV",
+                instagram: "www.instagram.com/vpda_e.v",
+                languages: {
+                de: "VPDA e.V. arbeitet in 3 Hauptbereichen: Entwicklungszusammenarbeit zwischen Deutschland und dem globalen Süden, Förderung der Integration von Migrant*innen sowie die Unterstützung im Bildungsbereich. Wir führen allgemeine Sozialberatungen durch, organisieren Workshops und sind in verschiedenen Netzwerken (z.B. Mehrsprachigkeit,  Antirassismus, Antidiskriminierung) aktiv. ",
+                
+                en: "VPDA e.V. works in 3 main areas: Development cooperation between Germany and the Global South, promoting the integration of migrants and providing support in the field of education. We provide general social counselling, organize workshops and are active in various networks (e.g. multilingualism, anti-racism, anti-discrimination)."},
+                media: [
+                    "https://www.youtube.com/embed/2R2ZByxtR28",
+                    "https://www.youtube.com/embed/fGnSxUhQx6Q",
+                    "https://www.youtube.com/embed/Q7yvmPy4Qhw",
+                    "https://live.staticflickr.com/65535/54397157793_10c444b9f9_b.jpg",
+                    "https://live.staticflickr.com/65535/54397103029_eac0ff1bed9_b.jpg",
+                    "https://live.staticflickr.com/65535/54397102984_d404c69ea8_b.jpg",
+                    "https://live.staticflickr.com/65535/54396036807_f53073182a_b.jpg",
+                    "https://live.staticflickr.com/65535/54397157763_f64b20a1e1_b.jpg",
+                    "https://live.staticflickr.com/65535/54397288145_76e3110e70_b.jpg"
+                ]
+            },
+            {
+                name: "Karussell e.V.",
+                type: "mso",
+                lat: 52.5534826055387,
+                lon: 13.408849939328247,
+                address: "Schönfließer Str. 7 (IKHP)",
+                phone: "030 440 365 55",
+                website: "https://karussell-ev.de/",
+                facebook: "https://www.facebook.com/karussell.ev",
+                instagram: "https://karussell-ev.de/",
+                languages: {
+                de: "VPDA e.V. arbeitet in 3 Hauptbereichen: Entwicklungszusammenarbeit zwischen Deutschland und dem globalen Süden, Förderung der Integration von Migrant*innen sowie die Unterstützung im Bildungsbereich. Wir führen allgemeine Sozialberatungen durch, organisieren Workshops und sind in verschiedenen Netzwerken (z.B. Mehrsprachigkeit,  Antirassismus, Antidiskriminierung) aktiv. ",
+                
+                en: "VPDA e.V. works in 3 main areas: Development cooperation between Germany and the Global South, promoting the integration of migrants and providing support in the field of education. We provide general social counselling, organize workshops and are active in various networks (e.g. multilingualism, anti-racism, anti-discrimination)."},
+                media: [
+                    "https://www.youtube.com/embed/k7BGGr0pp10",
+                    "https://www.youtube.com/embed/2zhA7zHQjgE",
+                    "https://live.staticflickr.com/65535/54409507553_cb5ca8d058_b.jpg",
+                    "https://live.staticflickr.com/65535/54409446674_a7c256acfe_b.jpg",
+                    "https://live.staticflickr.com/65535/54408393962_aff85e1664_b.jpg",
+                    "https://live.staticflickr.com/65535/54408393972_bac4a4a16c_b.jpg",
+                    "https://live.staticflickr.com/65535/54409507578_68c258f678_b.jpg"
+                ]
+            },
+            {
+                name: "Ein Lichtstrahl e.V.",
+                type: "mso",
+                lat: 52.5319742234481,
+                lon: 13.426639096997702,
+                address: "Immanuelkirchstraße 20, 10405 Berlin",
+                phone: "+49 (30) 88493008",
+                website: "https://einlichtstrahlev.de/de/ueber-uns/",
+                facebook: "https://www.facebook.com/einlichtstrahlev/",
+                instagram: "https://www.instagram.com/ein_lichtstrahl_ev/",
+                languages: {
+                    de: "Der Verein Ein Lichtstrahl e.V. wurde 2007 ins Leben gerufen.Die Idee unserer Gründung entstand in Berlin – in der Stadt, die für Aussiedler aller Welt offen ist, Integration, Lebensfreiheit und Vielfalt scheinbar selbstverständlich einhergehen, welche aber auch die Stadt ist, in der Armut und Reichtum in aller Offenheit und Kontrast direkt nebeneinander Programm sind.",
+                
+                en: "The association Ein Lichtstrahl e.V. was founded in 2007.The idea of our foundation was born in Berlin - in the city that is open to immigrants from all over the world, where integration, freedom of life and diversity seem to go hand in hand, but which is also the city where poverty and riches are programmed side by side in all openness and contrast."},
+                media: [
+                    "https://www.youtube.com/embed/GnGJz0L657Q",
+                    "https://live.staticflickr.com/65535/54382254086_8c5116edc5_b.jpg",
+                    "https://live.staticflickr.com/65535/54381387982_fe9e9e41b5_b.jpg",
+                    "https://live.staticflickr.com/65535/54382499133_88dd895df3_b.jpg",
+                    "https://live.staticflickr.com/65535/54382467214_e525a009bd_b.jpg"
+                ]
+            },
+            
+            {
+                name: "Zaki - Bildung und Kultur e.V.",
+                type: "mso",
+		lat: 52.55338863211804,
+                lon: 13.408891308677305,
+                address: "Schönfließer Str. 7, 10439 Berlin (IKHP)",
+                phone: "0162 2071801",
+                website: "https://zaki-ev.de",
+                facebook: "https://www.facebook.com/zakibildung/",
+                instagram: "https://www.instagram.com/zaki_verein/",
+                languages: {
+                    de: "ZAkï - Bildung und Kultur e.V., gegründet 2019 in Berlin, unterstützt Neubürger*innen aus Afghanistan, dem arabischsprachigen Raum und der Ukraine bei der Integration in Deutschland. Die Organisation fokussiert sich auf Bildung und Arbeitsmarktzugang, fördert gesellschaftliche Teilhabe und selbstbestimmte Zielsetzung. Ihr Angebot umfasst politische Bildung, behördliche Unterstützung, sprachliche Förderung und persönliche Zukunftsgestaltung, speziell für Menschen mit Fluchterfahrung.",
+                
+                en: "ZAkï - Bildung und Kultur e.V., founded in Berlin in 2019, helps new citizens from Afghanistan, the Arabic-speaking world and Ukraine to integrate in Germany. The organization focuses on education and access to the labour market, promotes social participation and self-determined goal setting. Its services include political education, official support, language support and personal future planning, especially for people with refugee experience."},
+                media: [
+                    "https://www.youtube.com/embed/Zx8f9BgoogM",
+                    "https://www.youtube.com/embed/GTcJhWeo3eM",
+                    "https://www.youtube.com/embed/9bOPQKvlvjw",
+                    "https://www.youtube.com/embed/VGPPFkf2iP4",                 
+                    "https://live.staticflickr.com/65535/54409661580_e233f1cf3c_b.jpg",
+                    "https://live.staticflickr.com/65535/54409284746_9e55dd4e71_b.jpg",
+                    "https://live.staticflickr.com/65535/54409466434_d32c217101_b.jpg",
+                    "https://live.staticflickr.com/65535/54409528443_788fd51698_b.jpg",
+                    "https://live.staticflickr.com/65535/54409661645_caaefa88df_b.jpg"
+                ]
+            },
+            
+             {
+                name: "SprachCafé Polnisch e.V.",
+                type: "mso",
+                lat: 52.56561672470837,
+                lon: 13.394077754670363,
+                address: "Schulzestr. 1, 13187 Berlin-Pankow",
+                phone: "+49 (0)160 9968 0059",
+                website: "https://sprachcafe-polnisch.org",
+                facebook: "https://www.facebook.com/sprachcafe.polnisch/",
+                instagram: "https://www.instagram.com/sprachcafepolnisch/",
+                languages: {
+                    de: "SprachCafé Polnisch ist ein Begegnungs- und Lernort mit polnischer Note im Norden und im Süden Berlins, ein Brückenbauer zwischen Sprachen, Kulturen, Generationen.Gute Nachbarschaft und Nachhaltigkeit liegen uns am Herzen.",
+                
+                en: "SprachCafé Polnisch is a meeting and learning place with a Polish touch in the north and south of Berlin, a bridge builder between languages, cultures and generations.Good neighborliness and sustainability are important to us."},
+                media: [
+                    "https://www.youtube.com/embed/iRDAoalmgNU",
+                    "https://live.staticflickr.com/65535/54409432531_d94d77bf08_b.jpg",
+                    "https://live.staticflickr.com/65535/54408565347_2a1b9c92da_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614269_1ac7b47249_b.jpg",
+                    "https://live.staticflickr.com/65535/54409678178_e9c023794e_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614304_e1a1d5959c_b.jpg",
+                    "https://live.staticflickr.com/65535/54408565292_0083e894b3_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614334_be0215da21_b.jpg",
+                    "https://live.staticflickr.com/65535/54408565207_2dc69724df_b.jpg",                    
+                    "https://live.staticflickr.com/65535/54408565207_2dc69724df_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614319_34c17ec8e0_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614249_aef9a25aee_b.jpg",
+                    "https://live.staticflickr.com/65535/54409432486_2a8264dd30_b.jpg",
+                    "https://live.staticflickr.com/65535/54409678153_8e709f6342_b.jpg",
+                    "https://live.staticflickr.com/65535/54408565187_f979377655_b.jpg",
+                    "https://live.staticflickr.com/65535/54409432426_a35a845d39_b.jpg",
+                    "https://live.staticflickr.com/65535/54409614189_f95a399659_b.jpg"
+                ]
+            },
+            
+             {
+                name: "Koopkultur e.V.",
+                type: "mso",
+                lat: 52.549381029197676, 
+                lon: 13.414048989612848,
+                address: "Schönhauser Allee 75, 10439 Berlin",
+                phone: "0177 4219797",
+                website: "https://www.koopkultur.de",
+                facebook: "https://www.facebook.com/koopkultur",
+                instagram: "https://www.instagram.com/koopkultur/",
+                languages: {
+                    de: "Koopkultur e.V. ist seit 2018 eine gemeinnützige MSO und ein Netzwerk von Künstler*innen, Wissenschaftler*innen, Urbanist*innenen, Pädagog*innen und Aktivist*innen. Gemeinsam arbeiten wir an Projekten, die verschiedene Disziplinen überschreiten und setzen uns für eine gerechtere und ganzheitliche Bildung ein. Durch unsere Zusammenarbeit und den Austausch untereinander schaffen wir eine Plattform, um positive Veränderungen in der Bildungslandschaft zu bewirken.",
+                
+                en: "Koopkultur e.V. has been a non-profit MSO since 2018 and is a network of artists, scientists, urbanists, educators and activists. Together, we work on projects that transcend different disciplines and are committed to a fairer and holistic education. Through our collaboration and exchange with each other, we create a platform to bring about positive change in the educational landscape."},
+                media: [
+                    "https://www.youtube.com/embed/MvQ5NiKILTs",
+                    "https://www.youtube.com/embed/6yfHy1b8iIk",
+                    "https://www.youtube.com/embed/POoBqeG6KWw",
+                    "https://live.staticflickr.com/65535/54409910545_c9f8af224d_b.jpg",
+                    "https://live.staticflickr.com/65535/54408662542_3319410cf3_b.jpg",
+                    "https://live.staticflickr.com/65535/54409531021_56f8f9cd7d_b.jpg",
+                    "https://live.staticflickr.com/65535/54409531026_3595fdcb59_b.jpg"
+                ]
+            },
+            
+              {
+                name: "Afrikanischer Elternverein Berlin Brandenburg - AfEBB e.V.",
+                type: "mso",
+                lat: 52.570942104204256, 
+                lon: 13.427925312341397,
+                address: "Prenzlauer Promenade 113, 13189 Berlin",
+                phone: "+49 176 43691330",
+                website: "https://afebb.de",
+                facebook: "https://afebb.de",
+                instagram: "https://www.instagram.com/afebb_elternverein/",
+                languages: {
+                    de: "Wir sein ein Verein, der zu einer gelungenen Integration der afrikanischen Community in Pankow beitragen möchte, indem wir ihr die dafür erforderlichen unterstützenden spezifischen Angebote.",
+                
+                en: "We are an association that wants to contribute to the successful integration of the African community in Pankow by providing it with the specific support it needs."},
+                media: [
+                    "https://www.youtube.com/embed/WvjGo0Ki1PU",
+                    "https://www.youtube.com/embed/OU43DlCGFX8",
+                    "https://www.youtube.com/embed/XgMRwBIAsdc"
+                    
+                ]
+            },
+            
+            {
+                name: "bocconcini di cultura e.V.",
+                type: "mso",
+                lat: 52.52984701702703, 
+                lon: 13.418774310491536,
+                address: "Prenzlauer Allee 8, 10405 Berlin",
+                phone: "030 44339181",
+                website: "https://www.bocconcini.net/?lang=de",
+                facebook: "https://www.facebook.com/bocconcinidicultura",
+                instagram: "https://www.instagram.com/bocconcinidicultura/",
+                languages: {
+                    de: "Förderung, Pflege und Verbreitung der italienische Sprache und Kultur unter Kinder und Jugendlichen, mit und ohne italienischen Herkunft.",
+                
+                en: "Promotion, cultivation and dissemination of the Italian language and culture among children and young people, with and without Italian origin."},
+                media: [
+                    "https://www.youtube.com/embed/1ft5l5lo-L8",
+                    "https://live.staticflickr.com/65535/54409556936_c38f454901_o.jpg"
+                   
+                ]
+            },
+            
+             {
+                name: "Initiative MESTIZX BERLIN",
+                type: "mso",
+                lat: 52.56691504491341, 
+                lon: 13.39758404426302,
+                address: "Wollankstraße 117, 13187 Berlin",
+                phone: "0152 01916017",
+                website: "https://mestizx.de/de/",
+                facebook: "https://www.facebook.com/MestizxBerlin/?locale=de_DE",
+                instagram: "https://www.instagram.com/mestizx_berlin/",
+                languages: {
+                    de: "Wir sind Mestizx, ein künstlerisches Kollektiv mit Sitz in Berlin. Wir wurden 2020 mit der Idee gegründet, kulturelle und partizipative Prozesse zu erforschen. Wir nähern uns den Herausforderungen unserer Stadt aus einem kritischen und transformativen Blickwinkel. Im Mittelpunkt unserer Arbeit steht die Schaffung von Räumen für Begegnung, Experiment und Dialog. Wir verbinden Kunst, Forschung und kollektive Aktionen. Da wir aus verschiedenen Ecken der Welt kommen, reden wir in verschiedenen Sprachen wie Spanisch, Deutsch, Englisch und Russisch.",
+                
+                en: "We are Mestizx, an artistic collective based in Berlin. We were founded in 2020 with the idea of exploring cultural and participatory processes. We approach the challenges of our city from a critical and transformative perspective. Our work focuses on creating spaces for encounters, experimentation and dialog. We combine art, research and collective action. As we come from different corners of the world, we speak in different languages such as Spanish, German, English and Russian.",
+                
+                
+                es: "Somos Mestizx, un colectivo artístico con sede en Berlín.Nacimos en 2020 con la idea de explorar procesos culturales y participativos. Abordamos los desafíos de nuestra ciudad desde una perspectiva crítica y transformadora. El núcleo de nuestro trabajo es la creación de espacios de encuentro, experimentación y diálogo. Combinamos arte, investigación y acciones colectivas. Como venimos de diferentes partes del mundo, nos comunicamos en varios idiomas, como español, alemán, inglés y ruso."
+},
+                media: [
+                    "https://www.youtube.com/embed/fDzlPHQLW3E",
+                    "https://live.staticflickr.com/65535/54409745064_45c7d449b7_b.jpg",
+                    "https://live.staticflickr.com/65535/54409942525_d265b530bb_b.jpg",
+                    "https://live.staticflickr.com/65535/54409745044_603511bd0e_b.jpg",
+                    "https://live.staticflickr.com/65535/54409745049_fdcba74657_b.jpg",
+                    "https://live.staticflickr.com/65535/54409563036_5a29ee6b75_b.jpg"
+                ]
+            },
+            
+            {
+                name: "MaMis en Movimiento e.V.",
+                type: "mso",
+                lat: 52.53304749996317, 
+                lon: 13.432319939327093,
+                address: "Esmarchstr. 18",
+                phone: "N/A",
+                website: "https://www.mamisenmovimiento.de",
+                facebook: "https://www.facebook.com/mamisenmovimientoberlin",
+                instagram: "https://www.instagram.com/mamisenmovimiento_/",
+               languages: {
+                    de: "MaMis en Movimiento e.V. wurde von migrantischen Müttern für andere Mütter, Migrant*innen, Familien und Kinder gegründet, mit dem Ziel, die Verbindung zur eigenen Muttersprache zu stärken und zu fördern.Bei MaMis setzen wir uns täglich für die Förderung von Mehrsprachigkeit, Teilhabe und Demokratie ein. Wir begrüßen und unterstützen alle Initiativen, die Räume schaffen, in denen alle Sprachen und Dialekte gleichberechtigt Platz finden – sowohl in Pankow als auch in ganz Berlin, wie zum Beispiel Community MAP.",
+                
+                en: "MaMis en Movimiento e.V. was founded by migrant mothers for other mothers, migrants, families and children with the aim of strengthening and promoting the connection to their own mother tongue.at MaMis we are committed to promoting multilingualism, participation and democracy on a daily basis. We welcome and support all initiatives that create spaces in which all languages and dialects have an equal place - both in Pankow and throughout Berlin, such as Community MAP.",
+                
+                es: "MaMis en Movimiento e.V. surgió de madres migrantes para otras madres, migrantes, familias e infancias, con el objetivo de fortalecer y conectar con su lengua materna. En MaMis trabajamos cada día en promover el multilingüismo, la participación y la democracia. Saludamos todas las iniciativas donde se generen espacios en los que quepan todas las lenguas e idiomas en Pankow y en todo Berlín, como por ejemplo Community MAP."},
+                media: [
+                    "https://www.youtube.com/embed/FP-912vHyS4",
+                    "https://live.staticflickr.com/65535/54408698172_181bba6998_b.jpg"
+                   
+                ]
+            },
+            
+            {
+                name: "Initiative Eltern von besonderen Kindern (EvbK)",
+                type: "mso",
+                lat: 52.53304749996317, 
+                lon: 13.432218939327093,
+                address: "Esmarchstr. 18",
+                phone: "01771 737095",
+                website: "https://www.mamisenmovimiento.de",
+                facebook: "https://www.facebook.com/mamisenmovimientoberlin",
+                instagram: "https://www.instagram.com/mamisenmovimiento_/",
+                languages: {
+                    de: "Wir sind eine Gruppe von Eltern von Kindern mit besonderen Bedürfnissen, die den Prozess der Migration und Inklusion miterleben.",
+                
+                    en: "We are a group of parents of children with special needs who are experiencing the process of migration and inclusion. "},
+                media: [
+                    "https://www.youtube.com/embed/8k2bkVXZUC0",
+                    "https://www.youtube.com/embed/gDnwQX2LLJ4"
+                    
+                ]
+            },
+            
+            {
+                name: "CineMova Ukrainian Empowerment Network e.V.",
+                type: "mso",
+                lat: 52.553486859178356,
+                lon: 13.40899594814418,
+                address: "Schönfließer Str. 7, 10439 Berlin",
+                phone: "N/A",
+                website: "www.cinemova.de",
+                facebook: "https://www.facebook.com/ukrainischerkinoklubberlin",
+                instagram: "https://www.instagram.com/cinemova_berlin/",
+                languages: {
+                    de: "Seit 2009 setzen wir uns für die Sichtbarmachung der ukrainischen Kultur, Geschichte und Gegenwart in Deutschland sowie für Stärkung von Menschen mit Migrationsgeschichte ein. Dabei organisieren wir Filmvorführungen, Workshops, Stadtführungen und haben eine Karte mit dem Namen Ukrainische Orte in Berlin erstellt. Wir führen Seminare zur politischen Partizipation, andere soziale und menschenrechtliche Projekte für Menschen mit Flucht- und Migrationsgeschichte sowie Projekte zum Empowerment von Frauen durch.",
+                
+                en: "Since 2009, we have been working to raise awareness of Ukrainian culture, history and the present in Germany and to empower people with a history of migration. We organize film screenings, workshops, city tours and have created a map called Ukrainian Places in Berlin. We run seminars on political participation, other social and human rights projects for people with a history of flight and migration and projects to empower women."},
+                media: [
+                    "https://live.staticflickr.com/65535/54408722262_7a49d2915c_b.jpg",
+                    "https://live.staticflickr.com/65535/54409971040_5dc7a1b01b_b.jpg",
+                    "https://live.staticflickr.com/65535/54409772539_665e52743c_b.jpg",
+                    "https://live.staticflickr.com/65535/54409772529_225d102a6e_b.jpg",
+                    "https://live.staticflickr.com/65535/54409591146_b835474b5f_b.jpg",
+                    "https://live.staticflickr.com/65535/54409837018_fd7064db05_b.jpg",
+                    "https://live.staticflickr.com/65535/54408722197_aeef7ba8ba_o.jpg",
+                    "https://live.staticflickr.com/65535/54409591151_3319c14766_b.jpg"
+                    
+                ]
+            },
+ {
+                name: "GePGeMi e.V.",
+                type: "mso",
+                lat: 52.55125321419985,
+                lon: 13.412018782981725,
+                address: "Schivelbeiner Str. 6, 10439 Berlin",
+                phone: "030 2869 8795",
+                website: "https://www.gemi-berlin.de/",
+                facebook: "https://www.facebook.com/gemiberlin/",
+                instagram: "https://www.instagram.com/gepgemi/",
+                languages: {
+                    de: "GePGeMi e.V. ist die Gesellschaft für Psychosoziale Gesundheitsförderung bei Migrantengruppen insbesondere aus asiatischen Ländern. Wir sind ein Interessenvertreter für die Gesundheitsförderung im psychosozialen Bereich besonders bei Migrantenfamilien und älteren Migranten/innen aus ostasiatischen Kulturräumen. GePGeMi versucht, durch diverse Projekte zur Verbesserung zu einer gerechten, sozialen, politischen und gesundheitlichen Teilhabe der asiatischen Migrantengruppen beizutragen. Somit zielen die Projekte von GePGeMi darauf ab, einerseits psychosoziale Probleme der asiatischen Migrant*innen der ersten Generation wahrzunehmen sowie diesen entgegenzuwirken und andererseits ihre damit verbundenen Bedürfnisse und Interessen ins öffentliche Bewusstsein zu bringen. Dementsprechend kommen die Aktivitäten von GePGeMi sowohl durch Forschungsprojekte als auch durch Praxis-Projekte zustande, wobei die ersten die Basis für die zweiten bilden.",
+                
+                en: "GePGeMi e.V. is the association for psychosocial health promotion among migrant groups, especially from Asian countries. We are an advocate for health promotion in the psychosocial field, especially for migrant families and older migrants from East Asian cultural areas. GePGeMi tries to contribute to the improvement of a fair, social, political and medical participation of Asian migrant groups through various projects. GePGeMi's projects thus aim to identify and counteract the psychosocial problems of first-generation Asian migrants and to raise public awareness of their associated needs and interests. Accordingly, GePGeMi's activities take the form of both research projects and practical projects, with the former providing the basis for the latter."},
+                media: [
+                    "https://www.youtube.com/embed/YwUbq_xTdbY",
+                    "https://live.staticflickr.com/65535/54608584003_6a811e951d_b.jpg",
+                    "https://live.staticflickr.com/65535/54607499457_9b5f7b3534_b.jpg",
+                    "https://live.staticflickr.com/65535/54608568279_2b76e24fa5_b.jpg",
+                    "https://live.staticflickr.com/65535/54608583788_58e6087d6f_b.jpg",
+                    "https://live.staticflickr.com/65535/54608678140_4a8f7576a8_b.jpg"
+                    
+                ]
+            },
+ {
+                name: "Polki w Berlinie e.V.",
+                type: "mso",
+                lat: 52.608813201646505,
+                lon: 13.414242341056953,
+                address: "Blankenfelder Straße 113, 13127 Berlin",
+                phone: "N/A",
+                website: "www.polkiwberlinie.de",
+                facebook: "https://www.facebook.com/polkiwberlinie/",
+                instagram: "https://www.instagram.com/polki_w_berlinie",
+                languages: {
+                    de: "Polki w Berlinie e.V. ist eine Organisation, die polnische Frauen in Berlin verbindet und sie in verschiedenen Lebensphasen unterstützt. Das Ziel des Vereins ist es, die Integration und Entwicklung polnischer Frauen durch soziale, Bildungs- und Kulturangebote zu fördern. Wir schaffen einen sicheren und inspirierenden Raum, in dem jede Frau sich entfalten, neue Fähigkeiten erlernen und Kontakte knüpfen kann – ganz gleich, ob sie gerade angekommen ist oder schon lange hier lebt. Wir organisieren Workshops, Veranstaltungen und Projekte zur Unterstützung von Frauen, Kindern und Jugendlichen. Besonders wichtig ist für uns die Mehrsprachigkeit – Sprache ist der Schlüssel zur Integration und vollen Teilhabe am gesellschaftlichen Leben. Deshalb fördern wir das Lernen und die Anwendung mehrerer Sprachen, damit sich jede Person hier wohlfühlen und verwirklichen kann. Polki w Berlinie ist eine Gemeinschaft voller Energie, Unterstützung und Solidarität, die Brücken zwischen Kulturen baut und Vielfalt fördert.",
+                
+                en: "Polki w Berlinie e.V. is an organization that connects Polish women in Berlin and supports them at various stages of their lives. The aim of the organization is to promote the integration and development of Polish women through social, educational and cultural activities. We create a safe and inspiring space, where every woman can develop, learn new skills and socialize - regardless of whether she has just arrived or has lived here for a long time. We organize workshops, events and projects to support women, children and young people. Multilingualism is particularly important to us - language is the key to integration and full participation in social life. That is why we promote the learning and use of several languages, so that everyone can feel comfortable and realize their potential here. Polki w Berlinie is a community full of energy, support and solidarity that builds bridges between cultures and promotes diversity.",
+
+pl: "Polki w Berlinie e.V. to organizacja łącząca polskie kobiety mieszkające w Berlinie, wspierająca je na różnych etapach życia. Celem stowarzyszenia jest wspieranie integracji i rozwoju Polek poprzez działania społeczne, edukacyjne i kulturalne. Tworzymy bezpieczną i inspirującą przestrzeń, gdzie każda kobieta może się rozwijać, zdobywać nowe umiejętności i budować relacje – bez względu na to, czy dopiero przyjechała, czy mieszka tutaj od lat. Organizujemy warsztaty, wydarzenia i projekty wspierające kobiety, dzieci oraz młodzież. Szczególnie ważna jest dla nas wielojęzyczność – język to klucz do integracji i pełnego uczestnictwa w życiu społecznym. Dlatego wspieramy naukę i używanie wielu języków, aby każda osoba czuła się tu dobrze i mogła się realizować. Polki w Berlinie to wspólnota pełna energii, wsparcia i solidarności, która buduje mosty między kulturami i promuje różnorodność."},
+                media: [
+                    "https://www.youtube.com/embed/1-thLgQDUoU",
+                    "https://www.youtube.com/embed/SJZmUqY8N28"
+                    
+                ]
+            },
+ {
+                name: "Café8TV - Sprachcafé Vietnamesisch",
+                type: "mso",
+                lat: 52.52877713619427,
+                lon: 13.46906171610154,
+                address: "Franz-Jacob-Straße 16-18, 10369 Berlin",
+                phone: "N/A",
+                website: "https://www.facebook.com/sprachcafe.vietnamesisch/?locale=de_DE",
+                facebook: "https://www.facebook.com/sprachcafe.vietnamesisch/?locale=de_DE",
+                
+                languages: {
+                    de: "Café8TV - Sprachcafé Vietnamesisch ist eine Elterninitiave, die seit 2021 vietnamesischsprachige und mehrsprachige Familien in Berlin stärkt. Wir schaffen einen Raum für Begegnung, Austausch und gemeinsame Familienzeit - mit Fokus auf Sprache, Bildung und kulturelle Verbundenheit.",
+                
+                en: "Café8TV - Sprachcafé Vietnamesisch is a parents' initiative that has been supporting Vietnamese-speaking and multilingual families in Berlin since 2021. We create a space for people to meet, exchange ideas and spend family time together - with a focus on language, education and cultural connection."},
+                media: [
+                    "https://www.youtube.com/embed/5hp7W4QeX4s",
+                    "https://live.staticflickr.com/65535/54597844634_c2d78afca8_b.jpg",
+                    "https://live.staticflickr.com/65535/54597959150_98079d7e01_b.jpg",
+                    "https://live.staticflickr.com/65535/54597959140_6131d5bab5_b.jpg",
+                    "https://live.staticflickr.com/65535/54597644666_b3f689502e_b.jpg",
+                    "https://live.staticflickr.com/65535/54596773377_1fe77b54e6_b.jpg",
+                    "https://live.staticflickr.com/65535/54596773347_feb090af80_b.jpg",
+                    "https://live.staticflickr.com/65535/54597863113_c294c9959a_b.jpg",
+		    "https://live.staticflickr.com/65535/54597844554_4bccb48b0b_b.jpg",
+		    "https://live.staticflickr.com/65535/54597644616_db5c2c1989_b.jpg",
+		    "https://live.staticflickr.com/65535/54597844509_cfd0604b26_b.jpg",
+		    "https://live.staticflickr.com/65535/54597863048_49c46a8fda_b.jpg",
+		    "https://live.staticflickr.com/65535/54597844469_83c2373db4_b.jpg"
+		    
+		
+                    
+                ]
+            },
+ {
+                name: "Janusz-Korczak-Bibliothek",
+                type: "library",
+                lat: 52.56871583348755,
+                lon: 13.41215203509039,
+                address: "Berliner Straße 120-121, 13187 Berlin",
+                phone: "030 90295-6965",
+                website: "https://www.berlin.de/stadtbibliothek-pankow/bibliotheken/janusz-korczak-bibliothek/",
+                facebook: "https://www.facebook.com/stbibpankow/?locale=de_DE",
+		instagram: "https://www.instagram.com/stbibpankow/",
+                
+                languages: {
+                    de: "",
+                
+                en: ""},
+		media: []
+            },
+ {
+                name: "Heinrich-Böll-Bibliothek",
+                type: "library",
+                lat: 52.54190127237889,
+                lon: 13.440793809962297,
+                address: "Greifswalder Str. 87, 10409 Berlin",
+                phone: "030 90295-3979",
+                website: "https://www.berlin.de/stadtbibliothek-pankow/bibliotheken/heinrich-boell-bibliothek/",
+                facebook: "https://www.facebook.com/stbibpankow/?locale=de_DE",
+		instagram: "https://www.instagram.com/stbibpankow/",
+                
+                languages: {
+                    de: "",
+                
+                en: ""},
+		media: []
+            },
+ {
+                name: "Wolfdietrich-Schnurre-Bibliothek",
+                type: "library",
+                lat: 52.54771212365261,
+                lon: 13.452670396472083,
+                address: "Bizetstraße 41, 13088 Berlin",
+                phone: "030 90295-3867",
+                website: "https://www.berlin.de/stadtbibliothek-pankow/bibliotheken/wolfdietrich-schnurre-bibliothek/",
+                facebook: "https://www.facebook.com/stbibpankow/?locale=de_DE",
+		instagram: "https://www.instagram.com/stbibpankow/",
+                
+                languages: {
+                    de: "",
+                
+                en: ""},
+		media: []
+            },
+ {
+                name: "Bettina-von-Arnim-Bibliothek",
+                type: "library",
+                lat: 52.54921366803282,
+                lon: 13.414015238799305,
+                address: "Schönhauser Allee 75, 10439 Berlin",
+                phone: "030 90295-6933",
+                website: "https://www.berlin.de/stadtbibliothek-pankow/bibliotheken/bettina-von-arnim-bibliothek/",
+                facebook: "https://www.facebook.com/stbibpankow/?locale=de_DE",
+		instagram: "https://www.instagram.com/stbibpankow/",
+                
+                languages: {
+                    de: "",
+                
+                en: ""},
+		media: []
+            },
+ {
+                name: "Bibliothek am Wasserturm",
+                type: "library",
+                lat: 52.53309355059331,
+                lon: 13.419533638798077,
+                address: "Prenzlauer Allee 227-228, 10405 Berlin",
+                phone: "030 90295-3921",
+                website: "https://www.berlin.de/stadtbibliothek-pankow/bibliotheken/bibliothek-am-wasserturm/",
+                facebook: "https://www.facebook.com/stbibpankow/?locale=de_DE",
+		instagram: "https://www.instagram.com/stbibpankow/",
+                
+                languages: {
+                    de: "",
+                
+                en: ""},
+		media: []
+            },
+ {
+                name: "Kurt-Tucholsky-Bibliothek",
+                type: "library",
+                lat: 52.53299787766987,
+                lon: 13.432189367634555,
+                address: "Esmarchstraße 18, 10407 Berlin",
+                phone: "030 90295-3963",
+                website: "https://www.berlin.de/stadtbibliothek-pankow/bibliotheken/kurt-tucholsky-bibliothek/",
+                facebook: "https://www.facebook.com/stbibpankow/?locale=de_DE",
+		instagram: "https://www.instagram.com/stbibpankow/",
+                
+                languages: {
+                    de: "",
+                
+                en: ""},
+		media: []
+            },
+ {
+                name: "Stadtteilbibliothek Buch",
+                type: "library",
+                lat: 52.635731650029854,
+                lon: 13.494013238805847,
+                address: "Wiltbergstraße 19-23, 13125 Berlin",
+                phone: "030 90295-6941",
+                website: "https://www.berlin.de/stadtbibliothek-pankow/bibliotheken/stadtteilbibliothek-buch/",
+                facebook: "https://www.facebook.com/stbibpankow/?locale=de_DE",
+		instagram: "https://www.instagram.com/stbibpankow/",
+                
+                languages: {
+                    de: "",
+                
+                en: ""},
+		media: []
+            },
+ {
+                name: "Stadtteilbibliothek Karow",
+                type: "library",
+                lat: 52.6166927164816,
+                lon: 13.491517871509782,
+                address: "Achillesstraße 77, 13125 Berlin",
+                phone: "(030) 90295-6949",
+                website: "https://www.berlin.de/stadtbibliothek-pankow/bibliotheken/stadtteilbibliothek-karow/",
+                facebook: "https://www.facebook.com/stbibpankow/?locale=de_DE",
+		instagram: "https://www.instagram.com/stbibpankow/",
+                
+                languages: {
+                    de: "Die Bibliothek Karow ist ein zentraler Ort im Kiez – ein Treffpunkt für alle Generationen. Mit vielfältigen Projekten rund um Leseförderung, Coding, Medienbildung und kulturelle Teilhabe richtet sie sich besonders auch an Migrant:innen und Familien. Kinoangebote, Sprachförderung und kreative Workshops machen sie zu einem echten Begegnungsort. Hier wächst Gemeinschaft durch Bildung.",
+                
+                en: "The Bibliothek Karow is a central location in the neighborhood - a meeting place for all generations. With a wide range of projects to promote reading, coding, media education and cultural participation, it is particularly also aimed at migrants and families. Cinema screenings, language promotion and creative workshops make it a real meeting place. Here, community grows through education."},
+		media: []
+            }
+        ];
+
+        var markers = [];
+        var currentIndex = 0;
+
+        function switchLanguage(lang, index) {
+            let org = organizations[index];
+            if (!org.languages[lang]) return;
+
+            let phoneText = lang === 'en' ? 'Phone:' : lang === 'de' ? 'Telefon:' : lang === 'es' ? 'Teléfono:' : lang === 'ru' ? 'Телефон:' : lang === 'it' ? 'Telefono:' :  lang === 'fr' ? 'Téléphone:' : lang === 'pl' ? 'Telefon:' :  '📞'; 
+            let websiteText = lang === 'en' ? 'Visit Website' : lang === 'de' ? 'Website besuchen' : lang === 'es' ? 'Visitar el sitio web' : lang === 'ru' ? 'Посетите сайт' : lang === 'it' ? 'Visita il sito web' : lang === 'fr' ? 'Visiter le site web' : lang === 'pl' ? 'Odwiedź stronę' : '🌐'; 
+            let addressText = lang === 'en' ? 'Address' : lang === 'de' ? 'Adresse' : lang === 'es' ? 'Dirección' : lang === 'ru' ? 'Адрес' : lang === 'it' ? 'Indirizzo' : lang === 'fr' ? 'Adresse' : lang === 'pl' ? 'Adres' : '📍';
+
+            document.querySelector("#panel-content p:nth-of-type(1)").innerHTML = `
+                <a class="address-link" href="https://www.google.com/maps/search/?api=1&query=${org.lat},${org.lon}" target="_blank">
+                    <img src="https://cdn-icons-png.flaticon.com/512/5431/5431045.png">
+                    <span id="panel-address-${index}"><strong>${addressText}:</strong> ${org.address}</span>
+                </a>
+            `;          
+            document.querySelector("#panel-content p:nth-of-type(2)").innerHTML = `<strong>${phoneText}</strong> ${org.phone}`;
+            document.querySelector("#panel-content p:nth-of-type(3)").textContent = org.languages[lang];
+            document.querySelector("#panel-website-btn a").textContent = websiteText;
+        }
+
+        function getLanguageName(langCode) {
+            const languageNames = {
+                de: "Deutsch",
+                en: "English",
+                es: "Español",
+                ru: "Русский",
+                fr: "Français",
+                it: "Italiano",
+		pl: "Polski"
+            };
+            return languageNames[langCode] || langCode.toUpperCase();
+        }
+
+        function showEntryPanel(index) {
+            currentIndex = index;
+            updateEntryCounter();
+            updateMarkerStyles(index);
+            const org = organizations[index];
+
+            let mediaSlides = org.media.map(item => {
+                if (item.includes("youtube.com")) {
+                    return `<div class="swiper-slide"><iframe src="${item}" frameborder="0" allowfullscreen></iframe></div>`;
+                } else {
+                    return `<div class="swiper-slide"><img src="${item}" /></div>`;
+                }
+            }).join("");
+
+            let languageOptions = Object.keys(org.languages)
+                .map(langCode => `<option value="${langCode}">${getLanguageName(langCode)}</option>`)
+                .join("");
+
+            let languageDropdown = `
+                <select class="language-dropdown" id="language-dropdown-${index}" onchange="switchLanguage(this.value, ${index})">
+                    ${languageOptions}
+                </select>
+            `;
+
+            let phoneText = 'Telefon:';
+            let websiteText = 'Website besuchen';
+            let addressText = 'Adresse:';
+
+            const panelContent = `
+                <div id="panel-search-container">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="search-input" placeholder="Search..." 
+                               style="padding: 8px; flex-grow: 1; border-radius: 5px; border: none; height: 20px;" 
+                               onkeydown="if (event.key === 'Enter') handleSearch()">
+                        <button onclick="handleSearch()" 
+                                style="height: 36px; width: 38px; border: none; background: #ff6600; color: white; border-radius: 5px; display: flex; justify-content: center; align-items: center;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div id="search-results"></div>
+                </div>
+                <div class="swiper-container main-swiper-${index}">
+                    <div class="swiper-wrapper">${mediaSlides}</div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+                <div class="name-and-language">
+                    <h3>${org.name}</h3>
+                    ${languageDropdown}
+                </div>
+                <p><a class="address-link" href="https://www.google.com/maps/search/?api=1&query=${org.lat},${org.lon}" target="_blank">
+                    <img src="https://cdn-icons-png.flaticon.com/512/5431/5431045.png">
+                    <span id="panel-address-${index}"><strong>${addressText}</strong> ${org.address}</span>
+                </a></p>
+                <p id="panel-phone-${index}"><strong>${phoneText}</strong> ${org.phone}</p>
+                <p id="panel-description-${index}">${org.languages.de}</p>
+                <div class="social-icons">
+                    <a href="${org.facebook}" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"></a>
+                    <a href="${org.instagram}" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"></a>
+                </div>
+                <div id="panel-website-btn">
+                    <a href="${org.website}" target="_blank" id="panel-website-${index}">${websiteText}</a>
+                </div>
+            `;
+
+            document.getElementById("panel-content").innerHTML = panelContent;
+            
+            new Swiper(`.main-swiper-${index}`, {
+                slidesPerView: 1,
+                spaceBetween: 10,
+                navigation: {
+                    nextEl: `.swiper-button-next`,
+                    prevEl: `.swiper-button-prev`
+                },
+                loop: true
+            });
+        }
+
+        function showNextEntry(direction) {
+            let newIndex = currentIndex + direction;
+            if (newIndex < 0) newIndex = organizations.length - 1;
+            if (newIndex >= organizations.length) newIndex = 0;
+            currentIndex = newIndex;
+            updateEntryCounter();
+            updateMarkerStyles(newIndex);
+            showEntryPanel(newIndex);
+            map.setView([organizations[newIndex].lat, organizations[newIndex].lon], 15);
+        }
+
+        function updateEntryCounter() {
+            const counter = document.getElementById("entry-counter");
+            counter.textContent = `${currentIndex + 1}/${organizations.length}`;
+        }
+
+        function toggleRightPanel() {
+            const panel = document.getElementById("right-side-panel");
+            const icon = document.getElementById("panel-arrow");
+            
+            panel.classList.toggle("hidden");
+            
+            if (panel.classList.contains("hidden")) {
+                if (window.innerWidth < 768) {
+                    icon.className = "fas fa-chevron-up";
+                } else {
+                    icon.className = "fas fa-chevron-right";
+                }
+            } else {
+                if (window.innerWidth < 768) {
+                    icon.className = "fas fa-chevron-down";
+                } else {
+                    icon.className = "fas fa-chevron-left";
+                }
+                if (document.getElementById("panel-content").innerHTML.trim() === "") {
+                    showEntryPanel(0);
+                }
+            }
+            
+            // Force map to resize after transition completes
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
+        }
+
+        function handleResize() {
+            const panel = document.getElementById("right-side-panel");
+            const icon = document.getElementById("panel-arrow");
+            
+            if (window.innerWidth < 768) {
+                // Mobile view
+                if (panel.classList.contains("hidden")) {
+                    icon.className = "fas fa-chevron-up";
+                } else {
+                    icon.className = "fas fa-chevron-down";
+                }
+            } else {
+                // Desktop view
+                if (panel.classList.contains("hidden")) {
+                    icon.className = "fas fa-chevron-right";
+                } else {
+                    icon.className = "fas fa-chevron-left";
+                }
+            }
+            
+            map.invalidateSize();
+        }
+
+        // Initialize the panel with the first entry when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            showEntryPanel(0);
+            map.setView([organizations[0].lat, organizations[0].lon], 15);
+            handleResize();
+        });
+
+        window.addEventListener('resize', handleResize);
+
+        // Create markers for each organization
+        // Create markers for each organization
+organizations.forEach((org, index) => {
+    // Choose icon based on type
+    let markerIcon = (org.type === "library") ? libraryIcon : msoIcon;
+    
+    var marker = L.marker([org.lat, org.lon], {
+        icon: markerIcon,
+        riseOnHover: true
+    })
+    .addTo(map)
+    .bindTooltip(org.name, { permanent: false, direction: "top" })
+    .on('click', function() {
+        updateMarkerStyles(index);
+        showEntryPanel(index);
+        const panel = document.getElementById("right-side-panel");
+        if (panel.classList.contains("hidden")) {
+            toggleRightPanel();
+        }
+    });
+
+    markers.push(marker);
+});
+
+      function updateMarkerStyles(selectedIndex) {
+    markers.forEach((marker, index) => {
+        const org = organizations[index];
+        
+        if (index === selectedIndex) {
+            // Highlighted style for selected marker
+            if (org.type === "library") {
+                marker.setIcon(highlightedLibraryIcon);
+            } else {
+                marker.setIcon(highlightedMsoIcon);
+            }
+            marker.setZIndexOffset(1000); // Bring to front
+        } else {
+            // Default style based on type
+            if (org.type === "library") {
+                marker.setIcon(libraryIcon);
+            } else {
+                marker.setIcon(msoIcon);
+            }
+            marker.setZIndexOffset(0);
+        }
+    });
+}
+
+        // Location tracking functionality
+        let isTracking = false;
+        let trackingId = null;
+        let locationMarkers = [];
+        let lastPositionMarker = null;
+        let firstLocationUpdate = true;
+
+        const locationButton = document.getElementById('location-btn');
+
+        function toggleLocationTracking() {
+            if (isTracking) {
+                stopLocationTracking();
+                locationButton.classList.remove('active');
+            } else {
+                startLocationTracking();
+                locationButton.classList.add('active');
+            }
+        }
+
+        function startLocationTracking() {
+            if (lastPositionMarker) {
+                map.removeLayer(lastPositionMarker);
+                lastPositionMarker = null;
+            }
+            
+            isTracking = true;
+            firstLocationUpdate = true;
+
+            trackingId = navigator.geolocation.watchPosition(position => {
+                const latlng = [position.coords.latitude, position.coords.longitude];
+
+                removeOldLocationMarker();
+
+                const marker = L.marker(latlng, {
+                    icon: L.divIcon({
+                        className: 'pulsing-location',
+                        html: '<div class="pulsing-dot"></div>',
+                        iconSize: [20, 20],
+                    }),
+                }).addTo(map);
+
+                locationMarkers.push(marker);
+
+                if (firstLocationUpdate) {
+                    map.setView(latlng, 13);
+                    firstLocationUpdate = false;
+                }
+
+            }, () => {
+                alert("Location access denied or unavailable.");
+                stopLocationTracking();
+                locationButton.classList.remove('active');
+            }, {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            });
+        }
+
+        function stopLocationTracking() {
+            isTracking = false;
+
+            let lastPosition = null;
+            if (locationMarkers.length > 0) {
+                lastPosition = locationMarkers[locationMarkers.length - 1].getLatLng();
+            }
+
+            while (locationMarkers.length > 0) {
+                const marker = locationMarkers.pop();
+                map.removeLayer(marker);
+            }
+
+            if (lastPosition) {
+                lastPositionMarker = L.marker(lastPosition, {
+                    icon: L.divIcon({
+                        className: 'last-position-marker',
+                        html: '<div style="width: 6px; height: 6px; background-color: red; border-radius: 50%;"></div>',
+                        iconSize: [12, 12],
+                    })
+                }).addTo(map);
+                
+                const now = new Date();
+                lastPositionMarker.bindTooltip(`Last position at ${now.toLocaleTimeString()}`, {
+                    permanent: false,
+                    direction: 'top'
+                });
+            }
+
+            if (trackingId !== null) {
+                navigator.geolocation.clearWatch(trackingId);
+                trackingId = null;
+            }
+        }
+
+        function removeOldLocationMarker() {
+            if (locationMarkers.length > 0) {
+                const oldMarker = locationMarkers.shift();
+                map.removeLayer(oldMarker);
+            }
+        }
+
+        function handleSearch() {
+            const query = document.getElementById("search-input").value.trim();
+            const resultsContainer = document.getElementById("search-results");
+            resultsContainer.innerHTML = "";
+
+            const options = {
+                includeScore: true,
+                threshold: 0.4,
+                keys: ['name', 'address']
+            };
+
+            const fuse = new Fuse(organizations, options);
+            const result = fuse.search(query);
+
+            if (result.length === 0) {
+                resultsContainer.innerHTML = "<div style='padding: 5px; color: #ccc;'>❌ No matches found.</div>";
+                return;
+            }
+
+            const bestMatches = result.slice(0, 5);
+            if (bestMatches.length === 1) {
+                const match = bestMatches[0];
+                const idx = organizations.indexOf(match.item);
+                zoomTo(idx);
+            } else {
+                const resultsList = document.createElement("div");
+                bestMatches.forEach(match => {
+                    const idx = organizations.indexOf(match.item);
+                    const resultItem = document.createElement("div");
+                    resultItem.innerHTML = `<a href="#" onclick="zoomTo(${idx}); return false;">${match.item.name} - ${match.item.address}</a>`;
+                    resultsContainer.appendChild(resultItem);
+                });
+            }
+        }
+
+        function zoomTo(index) {
+            const org = organizations[index];
+            map.setView([org.lat, org.lon], 15);
+            updateMarkerStyles(index); 
+            showEntryPanel(index);
+            
+            const panel = document.getElementById("right-side-panel");
+            if (panel.classList.contains("hidden")) {
+                toggleRightPanel();
+            }
+            
+            document.getElementById("search-results").innerHTML = "";
+        }
+
+        // Add resize observer to handle window resizing
+        const resizeObserver = new ResizeObserver(() => {
+            map.invalidateSize();
+        });
+        resizeObserver.observe(document.getElementById('map-container'));
+    </script>
+</body>
+</html>
